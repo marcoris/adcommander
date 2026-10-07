@@ -58,7 +58,10 @@ public partial class Form1 : Form
         asRepPage.Controls.Add(new AsRepRoastTab());
         _tabs.TabPages.Add(asRepPage);
         
-        _tabs.TabPages.Add(new TabPage("Remoting"));
+        TabPage remotingPage = new TabPage("Remoting");
+        remotingPage.Controls.Add(new RemotingTab());
+        _tabs.TabPages.Add(remotingPage);
+        
         _tabs.TabPages.Add(new TabPage("Enumeration"));
 
         // --- Row 1: the output area ---
