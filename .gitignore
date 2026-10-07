@@ -2,5 +2,6 @@
 # Diese .gitignore-Datei wurde von Microsoft(R) Visual Studio automatisch erstellt.
 ################################################################################
 
-/AD Commander/bin/Debug/net10.0-windows
+.vs
+/AD Commander/bin
 /AD Commander/obj
