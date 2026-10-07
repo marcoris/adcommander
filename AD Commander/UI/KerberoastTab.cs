@@ -48,7 +48,8 @@ public sealed class KerberoastTab : UserControl, ICommandTab
         layout.Controls.Add(_verboseBox, 1, 3);
 
         ToolTip tips = new ToolTip();
-
+        tips.SetToolTip(_toolBox, "PowerView (Invoke-Kerberoast, secure prompt) or Rubeus (compiled .exe).");
+        tips.SetToolTip(_targetUserBox, "Optional: restrict to one SPN account. Empty = roast all SPN accounts.");
         tips.SetToolTip(_outputFormatBox, "Hash format for cracking: Hashcat or John.");
         tips.SetToolTip(_verboseBox, "PowerView only.");
 
@@ -70,7 +71,7 @@ public sealed class KerberoastTab : UserControl, ICommandTab
         layout.Controls.Add(field, 1, row);
     }
 
-
+    pu
         string outputFormat = _outputFormatBox.SelectedItem?.ToString() ?? "Hashcat";
 
         string script = KerberoastGenerator.Generate(
