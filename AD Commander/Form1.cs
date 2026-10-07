@@ -53,7 +53,11 @@ public partial class Form1 : Form
         TabPage kerberoastPage = new TabPage("Kerberoasting");
         kerberoastPage.Controls.Add(new KerberoastTab());
         _tabs.TabPages.Add(kerberoastPage);
-        _tabs.TabPages.Add(new TabPage("AS-REP Roasting"));
+        
+        TabPage asRepPage = new TabPage("AS-REP Roasting");
+        asRepPage.Controls.Add(new AsRepRoastTab());
+        _tabs.TabPages.Add(asRepPage);
+        
         _tabs.TabPages.Add(new TabPage("Remoting"));
         _tabs.TabPages.Add(new TabPage("Enumeration"));
 
