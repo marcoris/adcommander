@@ -50,7 +50,9 @@ public partial class Form1 : Form
         aclPage.Controls.Add(new AclTab());
         _tabs.TabPages.Add(aclPage);
 
-        _tabs.TabPages.Add(new TabPage("Kerberoasting"));
+        TabPage kerberoastPage = new TabPage("Kerberoasting");
+        kerberoastPage.Controls.Add(new KerberoastTab());
+        _tabs.TabPages.Add(kerberoastPage);
         _tabs.TabPages.Add(new TabPage("AS-REP Roasting"));
         _tabs.TabPages.Add(new TabPage("Remoting"));
         _tabs.TabPages.Add(new TabPage("Enumeration"));
