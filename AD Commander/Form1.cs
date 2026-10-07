@@ -53,5 +53,64 @@ public partial class Form1 : Form
         _outputBox.Font = new Font("Consolas", 10f);
         _outputBox.WordWrap = false;          // keep PowerShell lines intact
         _outputBox.ScrollBars = RichTextBoxScrollBars.Both;
+
+        // --- Row 2: the three buttons, laid out left to right ---
+        FlowLayoutPanel buttons = new FlowLayoutPanel();
+        buttons.Dock = DockStyle.Fill;
+        buttons.FlowDirection = FlowDirection.LeftToRight;
+        buttons.Padding = new Padding(4);
+
+        Button generateButton = new Button();
+        generateButton.Text = "Generate";
+        generateButton.AutoSize = true;
+        generateButton.Click += OnGenerateClicked;
+
+        Button copyButton = new Button();
+        copyButton.Text = "Copy to Clipboard";
+        copyButton.AutoSize = true;
+        copyButton.Click += OnCopyClicked;
+
+        Button clearButton = new Button();
+        clearButton.Text = "Clear";
+        clearButton.AutoSize = true;
+        clearButton.Click += OnClearClicked;
+
+        buttons.Controls.Add(generateButton);
+        buttons.Controls.Add(copyButton);
+        buttons.Controls.Add(clearButton);
+
+        // Place each region into its row of the table.
+        root.Controls.Add(tabs, 0, 0);
+        root.Controls.Add(_outputBox, 0, 1);
+        root.Controls.Add(buttons, 0, 2);
+
+        Controls.Add(root);
+    }
+
+    // Generate is wired to real command generators from phase 6 on.
+    private void OnGenerateClicked(object? sender, EventArgs e)
+    {
+        _outputBox.Text =
+            "# Generate will produce PowerShell here once the first\r\n" +
+            "# command generator is added (phase 6).";
+    }
+
+    // Copy the current output to the Windows clipboard, if there is any.
+    private void OnCopyClicked(object? sender, EventArgs e)
+    {
+        if (_outputBox.TextLength == 0)
+        {
+            MessageBox.Show("There is nothing to copy yet.", "AD Commander",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        Clipboard.SetText(_outputBox.Text);
+    }
+
+    // Empty the output area.
+    private void OnClearClicked(object? sender, EventArgs e)
+    {
+        _outputBox.Clear();
     }
 }
