@@ -13,5 +13,8 @@
     <Compile Update="UI\PowerViewTab.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\RemotingTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
   </ItemGroup>
 </Project>
