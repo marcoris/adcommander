@@ -62,7 +62,9 @@ public partial class Form1 : Form
         remotingPage.Controls.Add(new RemotingTab());
         _tabs.TabPages.Add(remotingPage);
         
-        _tabs.TabPages.Add(new TabPage("Enumeration"));
+        TabPage enumerationPage = new TabPage("Enumeration");
+        enumerationPage.Controls.Add(new EnumerationTab());
+        _tabs.TabPages.Add(enumerationPage);
 
         // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
