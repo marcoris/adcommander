@@ -1,16 +1,18 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using AD_Commander.Models;
 using AD_Commander.UI;
 
 namespace AD_Commander;
 
 // The application's main window.
-// Phase 4: the Credentials tab now hosts the CredentialTab control; other tabs still empty.
+// Phase 5/6: ACL tab + Set-DomainUserPassword generator wired to the shared Generate button.
 public partial class Form1 : Form
 {
-    // Kept as a field so later phases (the Generate button) can write generated code here.
     private readonly RichTextBox _outputBox = new RichTextBox();
+    private readonly TabControl _tabs = new TabControl();
+    private readonly CredentialTab _credentialTab = new CredentialTab();
 
     public Form1()
     {
@@ -25,7 +27,6 @@ public partial class Form1 : Form
         Height = 650;
         StartPosition = FormStartPosition.CenterScreen;
 
-        // Root layout: three stacked rows (tabs, output, buttons).
         TableLayoutPanel root = new TableLayoutPanel();
         root.Dock = DockStyle.Fill;
         root.ColumnCount = 1;
@@ -35,22 +36,22 @@ public partial class Form1 : Form
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52f));
 
         // --- Row 0: the tabs ---
-        TabControl tabs = new TabControl();
-        tabs.Dock = DockStyle.Fill;
+        _tabs.Dock = DockStyle.Fill;
 
-        // The Credentials tab hosts its own control; the rest stay empty for now.
         TabPage credentialsPage = new TabPage("Credentials");
-        credentialsPage.Controls.Add(new CredentialTab());
-        tabs.TabPages.Add(credentialsPage);
+        credentialsPage.Controls.Add(_credentialTab);
+        _tabs.TabPages.Add(credentialsPage);
 
-        string[] remainingTabs =
-        {
-            "PowerView", "ACL", "Kerberoasting", "AS-REP Roasting", "Remoting", "Enumeration"
-        };
-        foreach (string title in remainingTabs)
-        {
-            tabs.TabPages.Add(new TabPage(title));
-        }
+        _tabs.TabPages.Add(new TabPage("PowerView"));
+
+        TabPage aclPage = new TabPage("ACL");
+        aclPage.Controls.Add(new AclTab());
+        _tabs.TabPages.Add(aclPage);
+
+        _tabs.TabPages.Add(new TabPage("Kerberoasting"));
+        _tabs.TabPages.Add(new TabPage("AS-REP Roasting"));
+        _tabs.TabPages.Add(new TabPage("Remoting"));
+        _tabs.TabPages.Add(new TabPage("Enumeration"));
 
         // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
@@ -83,19 +84,38 @@ public partial class Form1 : Form
         buttons.Controls.Add(copyButton);
         buttons.Controls.Add(clearButton);
 
-        root.Controls.Add(tabs, 0, 0);
+        root.Controls.Add(_tabs, 0, 0);
         root.Controls.Add(_outputBox, 0, 1);
         root.Controls.Add(buttons, 0, 2);
 
         Controls.Add(root);
     }
 
-    // Generate is wired to real command generators from phase 6 on.
+    // Ask the active tab to generate, passing in the shared credentials.
     private void OnGenerateClicked(object? sender, EventArgs e)
     {
-        _outputBox.Text =
-            "# Generate will produce PowerShell here once the first\r\n" +
-            "# command generator is added (phase 6).";
+        TabPage? page = _tabs.SelectedTab;
+        Control? content = (page != null && page.Controls.Count > 0) ? page.Controls[0] : null;
+
+        if (content is ICommandTab commandTab)
+        {
+            CommandResult result = commandTab.Generate(_credentialTab.GetInput());
+            if (result.Success)
+            {
+                _outputBox.Text = result.Text;
+            }
+            else
+            {
+                MessageBox.Show(result.Error, "AD Commander",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            return;
+        }
+
+        MessageBox.Show(
+            "Select an operation tab (e.g. ACL), fill in its fields, then click Generate.",
+            "AD Commander", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     // Copy the current output to the Windows clipboard, if there is any.
