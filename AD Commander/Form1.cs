@@ -42,7 +42,9 @@ public partial class Form1 : Form
         credentialsPage.Controls.Add(_credentialTab);
         _tabs.TabPages.Add(credentialsPage);
 
-        _tabs.TabPages.Add(new TabPage("PowerView"));
+        TabPage powerViewPage = new TabPage("PowerView");
+        powerViewPage.Controls.Add(new PowerViewTab());
+        _tabs.TabPages.Add(powerViewPage);
 
         TabPage aclPage = new TabPage("ACL");
         aclPage.Controls.Add(new AclTab());
