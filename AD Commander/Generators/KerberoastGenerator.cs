@@ -12,7 +12,7 @@ public static class KerberoastGenerator
         string targetUser,
         string outputFormat,
         bool verbose,
-
+        string domain,
         string username)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
