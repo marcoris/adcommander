@@ -26,6 +26,8 @@ public sealed class KerberoastTab : UserControl, ICommandTab
         layout.ColumnCount = 2;
         layout.AutoSize = true;
         layout.Padding = new Padding(10);
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120f));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 320f));
 
         _toolBox.DropDownStyle = ComboBoxStyle.DropDownList;
         _toolBox.Items.AddRange(new object[] { "PowerView", "Rubeus" });
@@ -71,7 +73,9 @@ public sealed class KerberoastTab : UserControl, ICommandTab
         layout.Controls.Add(field, 1, row);
     }
 
-    pu
+    public CommandResult Generate(CredentialInput credential)
+    {
+        string tool = _toolBox.SelectedItem?.ToString() ?? "PowerView";
         string outputFormat = _outputFormatBox.SelectedItem?.ToString() ?? "Hashcat";
 
         string script = KerberoastGenerator.Generate(
