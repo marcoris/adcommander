@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using AD_Commander.Models;
 
-namespace AD_Commander.UI
+namespace AD_Commander.UI;
+
+// Implemented by every tab that can turn its inputs into a PowerShell command.
+// The shared Generate button in Form1 calls this on whichever tab is active.
+public interface ICommandTab
 {
-    internal class ICommandTab
-    {
-    }
+    CommandResult Generate(CredentialInput credential);
 }
