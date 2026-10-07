@@ -1,4 +1,4 @@
-﻿namespace AD_Commander.Generators;
+namespace AD_Commander.Generators;
 
 // Builds the PowerView `Set-DomainUserPassword` command (ForceChangePassword ACL abuse).
 // Pure text generation only: nothing here runs PowerShell or touches the network.
@@ -32,7 +32,7 @@ public static class SetDomainUserPasswordGenerator
                 "    -AccountPassword $TargetPassword `",
                 "    -Credential $Cred `",
                 "    -Verbose");
-
+        }
 
         // Insecure: passwords are embedded in the script. Lab use only.
         return Join(
