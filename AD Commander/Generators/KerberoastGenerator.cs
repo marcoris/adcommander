@@ -32,7 +32,7 @@ public static class KerberoastGenerator
         if (useCredential)
         {
             lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-   $SecPassword)");
+            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(domain)}\\{Ps(username)}', $SecPassword)");
             lines.Add("");
         }
 
