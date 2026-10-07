@@ -1,16 +1,17 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using AD_Commander.UI;
 
 namespace AD_Commander;
 
 // The application's main window.
-// Phase 3: the seven tabs on top, a monospace output area, and the button row.
+// Phase 4: the Credentials tab now hosts the CredentialTab control; other tabs still empty.
 public partial class Form1 : Form
 {
     // Kept as a field so later phases (the Generate button) can write generated code here.
     private readonly RichTextBox _outputBox = new RichTextBox();
-    
+
     public Form1()
     {
         InitializeComponent();
@@ -24,37 +25,40 @@ public partial class Form1 : Form
         Height = 650;
         StartPosition = FormStartPosition.CenterScreen;
 
-        // Root layout: three stacked rows (tabs, output, buttons). A TableLayoutPanel is
-        // used instead of plain docking so the regions always keep their place.
+        // Root layout: three stacked rows (tabs, output, buttons).
         TableLayoutPanel root = new TableLayoutPanel();
         root.Dock = DockStyle.Fill;
         root.ColumnCount = 1;
         root.RowCount = 3;
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100f)); // tabs take the remaining space
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 190f)); // output: fixed height
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52f));  // buttons: fixed height
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 190f));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52f));
 
-        // --- Row 0: the seven tabs (same as phase 2) ---
+        // --- Row 0: the tabs ---
         TabControl tabs = new TabControl();
         tabs.Dock = DockStyle.Fill;
-        string[] tabTitles =
-        {
-            "Credentials", "PowerView", "ACL", "Kerberoasting",
-            "AS-REP Roasting", "Remoting", "Enumeration"
-        };
 
-        foreach (string title in tabTitles)
+        // The Credentials tab hosts its own control; the rest stay empty for now.
+        TabPage credentialsPage = new TabPage("Credentials");
+        credentialsPage.Controls.Add(new CredentialTab());
+        tabs.TabPages.Add(credentialsPage);
+
+        string[] remainingTabs =
+        {
+            "PowerView", "ACL", "Kerberoasting", "AS-REP Roasting", "Remoting", "Enumeration"
+        };
+        foreach (string title in remainingTabs)
         {
             tabs.TabPages.Add(new TabPage(title));
         }
 
-        // --- Row 1: the output area where generated PowerShell is shown ---
+        // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
         _outputBox.Font = new Font("Consolas", 10f);
-        _outputBox.WordWrap = false;          // keep PowerShell lines intact
+        _outputBox.WordWrap = false;
         _outputBox.ScrollBars = RichTextBoxScrollBars.Both;
 
-        // --- Row 2: the three buttons, laid out left to right ---
+        // --- Row 2: the three buttons ---
         FlowLayoutPanel buttons = new FlowLayoutPanel();
         buttons.Dock = DockStyle.Fill;
         buttons.FlowDirection = FlowDirection.LeftToRight;
@@ -79,7 +83,6 @@ public partial class Form1 : Form
         buttons.Controls.Add(copyButton);
         buttons.Controls.Add(clearButton);
 
-        // Place each region into its row of the table.
         root.Controls.Add(tabs, 0, 0);
         root.Controls.Add(_outputBox, 0, 1);
         root.Controls.Add(buttons, 0, 2);
