@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using AD_Commander.Generators;
 using AD_Commander.Models;
 
@@ -18,6 +18,7 @@ public sealed class AclTab : UserControl, ICommandTab
         BuildUi();
     }
 
+    private void BuildUi()
     {
         Dock = DockStyle.Fill;
 
@@ -55,7 +56,8 @@ public sealed class AclTab : UserControl, ICommandTab
     }
 
     private void AddRow(TableLayoutPanel layout, int row, string labelText, Control field)
-
+    {
+        Label caption = new Label();
         caption.Text = labelText;
         caption.AutoSize = true;
         caption.Anchor = AnchorStyles.Left;
