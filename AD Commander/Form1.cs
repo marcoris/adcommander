@@ -6,8 +6,6 @@ using AD_Commander.UI;
 
 namespace AD_Commander;
 
-// The application's main window.
-// Phase 5/6: ACL tab + Set-DomainUserPassword generator wired to the shared Generate button.
 public partial class Form1 : Form
 {
     private readonly RichTextBox _outputBox = new RichTextBox();
@@ -40,33 +38,14 @@ public partial class Form1 : Form
         // --- Row 0: the tabs ---
         _tabs.Dock = DockStyle.Fill;
 
-        TabPage credentialsPage = new TabPage("Credentials");
-        credentialsPage.Controls.Add(_credentialTab);
-        _tabs.TabPages.Add(credentialsPage);
-
-        TabPage powerViewPage = new TabPage("PowerView");
-        powerViewPage.Controls.Add(new PowerViewTab());
-        _tabs.TabPages.Add(powerViewPage);
-
-        TabPage aclPage = new TabPage("ACL");
-        aclPage.Controls.Add(new AclTab());
-        _tabs.TabPages.Add(aclPage);
-
-        TabPage kerberoastPage = new TabPage("Kerberoasting");
-        kerberoastPage.Controls.Add(new KerberoastTab());
-        _tabs.TabPages.Add(kerberoastPage);
-        
-        TabPage asRepPage = new TabPage("AS-REP Roasting");
-        asRepPage.Controls.Add(new AsRepRoastTab());
-        _tabs.TabPages.Add(asRepPage);
-        
-        TabPage remotingPage = new TabPage("Remoting");
-        remotingPage.Controls.Add(new RemotingTab());
-        _tabs.TabPages.Add(remotingPage);
-        
-        TabPage enumerationPage = new TabPage("Enumeration");
-        enumerationPage.Controls.Add(new EnumerationTab());
-        _tabs.TabPages.Add(enumerationPage);
+        // Add Tabs
+        AddCommandTab("Credentials", new CredentialTab());
+        AddCommandTab("PowerView", new PowerViewTab());
+        AddCommandTab("ACL", new AclTab());
+        AddCommandTab("Kerberoasting", new KerberoastTab());
+        AddCommandTab("AS-REP Roasting", new AsRepRoastTab());
+        AddCommandTab("Remoting", new RemotingTab());
+        AddCommandTab("Enumeration", new EnumerationTab());
 
         // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
@@ -110,6 +89,14 @@ public partial class Form1 : Form
         root.Controls.Add(buttons, 0, 3);
 
         Controls.Add(root);
+    }
+
+    // Add Tabs
+    private void AddCommandTab(string title, UserControl control)
+    {
+        TabPage page = new TabPage(title);
+        page.Controls.Add(control);
+        _tabs.TabPages.Add(page);
     }
 
     // Ask the active tab to generate, passing in the shared credentials.
