@@ -26,12 +26,16 @@ jobs:
 
       - name: Publish
         shell: pwsh
-        run: >
-          dotnet publish -c Release
-          -r ${{ matrix.rid }}
-          --self-contained ${{ matrix.selfcontained }}
-          -p:PublishSingleFile=true
-          -o publish
+        run: |
+          $proj = Get-ChildItem -Recurse -Filter *.csproj | Select-Object -First 1
+          if (-not $proj) { throw "No .csproj found in the repository." }
+          Write-Host "Publishing $($proj.FullName)"
+          dotnet publish $proj.FullName `
+            -c Release `
+            -r ${{ matrix.rid }} `
+            --self-contained ${{ matrix.selfcontained }} `
+            -p:PublishSingleFile=true `
+            -o publish
 
       - name: Package
         shell: pwsh
