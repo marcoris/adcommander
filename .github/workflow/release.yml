@@ -1,0 +1,63 @@
+name: release
+
+# Trigger: push a version tag (e.g. v1.0.0). workflow_dispatch lets you test the
+# build from the Actions tab without creating a release.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # required to create the GitHub Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        rid: [win-x64, win-x86]
+        selfcontained: [true, false]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'   # <-- match your project's target (e.g. 8.0.x)
+
+      - name: Publish
+        shell: pwsh
+        run: >
+          dotnet publish -c Release
+          -r ${{ matrix.rid }}
+          --self-contained ${{ matrix.selfcontained }}
+          -p:PublishSingleFile=true
+          -o publish
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $mode = if ('${{ matrix.selfcontained }}' -eq 'true') { 'selfcontained' } else { 'framework' }
+          $name = "AD-Commander-${{ matrix.rid }}-$mode"
+          Compress-Archive -Path publish/* -DestinationPath "$name.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AD-Commander-${{ matrix.rid }}-${{ matrix.selfcontained }}
+          path: '*.zip'
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')   # only publish a Release for tags
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
