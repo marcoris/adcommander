@@ -26,12 +26,14 @@ public partial class Form1 : Form
         Width = 900;
         Height = 650;
         StartPosition = FormStartPosition.CenterScreen;
+        MinimumSize = new Size(760, 520);
 
         TableLayoutPanel root = new TableLayoutPanel();
         root.Dock = DockStyle.Fill;
         root.ColumnCount = 1;
-        root.RowCount = 3;
+        root.RowCount = 4;
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 24f));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 190f));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52f));
 
@@ -97,9 +99,15 @@ public partial class Form1 : Form
         buttons.Controls.Add(copyButton);
         buttons.Controls.Add(clearButton);
 
+        Label outputLabel = new Label();
+        outputLabel.Text = "Generated PowerShell:";
+        outputLabel.AutoSize = true;
+        outputLabel.Margin = new Padding(3, 3, 3, 0);
+
         root.Controls.Add(_tabs, 0, 0);
-        root.Controls.Add(_outputBox, 0, 1);
-        root.Controls.Add(buttons, 0, 2);
+        root.Controls.Add(outputLabel, 0, 1);
+        root.Controls.Add(_outputBox, 0, 2);
+        root.Controls.Add(buttons, 0, 3);
 
         Controls.Add(root);
     }
