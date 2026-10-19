@@ -15,15 +15,16 @@ public static class AsRepRoastGenerator
         bool verbose,
         string domain,
         string username,
-        string password)
+        string password,
+        bool secureMode)
     {
         return tool == "Rubeus"
             ? GenerateRubeus(identity, outputFormat, domain, username, password)
-            : GeneratePowerView(identity, properties, verbose, domain, username);
+            : GeneratePowerView(identity, properties, verbose, domain, username, password, secureMode);
     }
 
     private static string GeneratePowerView(
-        string identity, string properties, bool verbose, string domain, string username)
+        string identity, string properties, bool verbose, string domain, string username, string password, bool secureMode)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
         List<string> lines = new List<string>();
@@ -33,7 +34,7 @@ public static class AsRepRoastGenerator
 
         if (useCredential)
         {
-            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
+            lines.AddRange(GeneratorHelpers.CredentialBlock(domain, username, password, secureMode));
         }
 
         lines.Add(GeneratorHelpers.PowerViewImport);
