@@ -12,14 +12,16 @@ public static class RemotingGenerator
         string authentication,
         string command,
         string domain,
-        string username)
+        string username,
+        string password,
+        bool secureMode)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
         List<string> lines = new List<string>();
 
         if (useCredential)
         {
-            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
+            lines.AddRange(GeneratorHelpers.CredentialBlock(domain, username, password, secureMode));
         }
 
         // New-PSSession is usually captured in a variable for later Invoke-Command/Enter-PSSession.
