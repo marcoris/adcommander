@@ -12,8 +12,8 @@ public static class SetDomainUserPasswordGenerator
         string newTargetPassword,
         bool secureMode)
     {
-        string account = Ps(domain) + "\\" + Ps(username);
-        string identity = Ps(targetIdentity);
+        string account = GeneratorHelpers.EscapeSingleQuotes(domain) + "\\" + GeneratorHelpers.EscapeSingleQuotes(username);
+        string identity = GeneratorHelpers.EscapeSingleQuotes(targetIdentity);
 
         if (secureMode)
         {
@@ -25,36 +25,25 @@ public static class SetDomainUserPasswordGenerator
                 "",
                 $"$TargetPassword = Read-Host \"New password for {identity}\" -AsSecureString",
                 "",
-                "Import-Module .\\PowerView.ps1",
+                GeneratorHelpers.PowerViewImport,
                 "",
-                "Set-DomainUserPassword `",
-                $"    -Identity '{identity}' `",
-                "    -AccountPassword $TargetPassword `",
-                "    -Credential $Cred `",
-                "    -Verbose");
+                $"Set-DomainUserPassword -Identity '{identity}' -AccountPassword $TargetPassword -Credential $Cred -Verbose");
         }
 
         // Insecure: passwords are embedded in the script. Lab use only.
         return Join(
             "# !!! INSECURE: passwords are embedded in clear text below. Use only in an isolated lab. !!!",
             "",
-            $"$SecPassword = ConvertTo-SecureString '{Ps(credentialPassword)}' -AsPlainText -Force",
+            $"$SecPassword = ConvertTo-SecureString '{GeneratorHelpers.EscapeSingleQuotes(credentialPassword)}' -AsPlainText -Force",
             $"$Cred = New-Object System.Management.Automation.PSCredential('{account}', $SecPassword)",
             "",
-            $"$TargetPassword = ConvertTo-SecureString '{Ps(newTargetPassword)}' -AsPlainText -Force",
+            $"$TargetPassword = ConvertTo-SecureString '{GeneratorHelpers.EscapeSingleQuotes(newTargetPassword)}' -AsPlainText -Force",
             "",
-            "Import-Module .\\PowerView.ps1",
+            GeneratorHelpers.PowerViewImport,
             "",
-            "Set-DomainUserPassword `",
-            $"    -Identity '{identity}' `",
-            "    -AccountPassword $TargetPassword `",
-            "    -Credential $Cred `",
-            "    -Verbose");
+            $"Set-DomainUserPassword -Identity '{identity}' -AccountPassword $TargetPassword -Credential $Cred -Verbose");
     }
 
     // Join lines with Windows newlines.
     private static string Join(params string[] lines) => string.Join("\r\n", lines);
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
