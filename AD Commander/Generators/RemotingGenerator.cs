@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace AD_Commander.Generators;
 
@@ -19,15 +19,13 @@ public static class RemotingGenerator
 
         if (useCredential)
         {
-            lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(domain)}\\{Ps(username)}', $SecPassword)");
-            lines.Add("");
+            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
         }
 
         // New-PSSession is usually captured in a variable for later Invoke-Command/Enter-PSSession.
         string line = operation == "New-PSSession"
-            ? $"$Session = New-PSSession -ComputerName '{Ps(computerName)}'"
-            : $"{operation} -ComputerName '{Ps(computerName)}'";
+            ? $"$Session = New-PSSession -ComputerName '{GeneratorHelpers.EscapeSingleQuotes(computerName)}'"
+            : $"{operation} -ComputerName '{GeneratorHelpers.EscapeSingleQuotes(computerName)}'";
 
         if (useCredential)
         {
@@ -47,7 +45,4 @@ public static class RemotingGenerator
 
         return string.Join("\r\n", lines);
     }
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
