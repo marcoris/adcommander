@@ -19,14 +19,16 @@ public static class PowerViewGenerator
         bool recurse,
         bool verbose,
         string credDomain,
-        string credUsername)
+        string credUsername,
+        string credPassword,
+        bool secureMode)
     {
         bool useCredential = credDomain.Length > 0 && credUsername.Length > 0;
         List<string> lines = new List<string>();
 
         if (useCredential)
         {
-            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(credDomain, credUsername));
+            lines.AddRange(GeneratorHelpers.CredentialBlock(credDomain, credUsername, credPassword, secureMode));
         }
 
         lines.Add(GeneratorHelpers.PowerViewImport);
