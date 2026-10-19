@@ -11,7 +11,7 @@ public static class GeneratorHelpers
 
     // The default "secure" credential block: PowerShell prompts for the password at runtime
     // (Read-Host -AsSecureString), so it never enters this app. Returns the lines to insert,
-    // including the trailing blank line, matching the existing generators' output exactly.
+    // including the trailing blank line.
     public static List<string> SecureCredentialBlock(string domain, string username)
     {
         return new List<string>
@@ -21,6 +21,25 @@ public static class GeneratorHelpers
             ""
         };
     }
+
+    // The "inline" credential block: the password is embedded in the script in clear text.
+    // Lab use only. Returns the lines to insert, including the trailing blank line.
+    public static List<string> InlineCredentialBlock(string domain, string username, string password)
+    {
+        return new List<string>
+        {
+            "# !!! INSECURE: the password is embedded in clear text below. Use only in an isolated lab. !!!",
+            $"$SecPassword = ConvertTo-SecureString '{EscapeSingleQuotes(password)}' -AsPlainText -Force",
+            $"$Cred = New-Object System.Management.Automation.PSCredential('{EscapeSingleQuotes(domain)}\\{EscapeSingleQuotes(username)}', $SecPassword)",
+            ""
+        };
+    }
+
+    // Pick the credential block based on the global SecureMode flag.
+    public static List<string> CredentialBlock(string domain, string username, string password, bool secureMode)
+        => secureMode
+            ? SecureCredentialBlock(domain, username)
+            : InlineCredentialBlock(domain, username, password);
 
     // The PowerView import line used by every PowerView-based generator.
     public const string PowerViewImport = "Import-Module .\\PowerView.ps1";
