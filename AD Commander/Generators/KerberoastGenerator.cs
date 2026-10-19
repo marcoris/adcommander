@@ -13,15 +13,16 @@ public static class KerberoastGenerator
         bool verbose,
         string domain,
         string username,
-        string password)
+        string password,
+        bool secureMode)
     {
         return tool == "Rubeus"
             ? GenerateRubeus(targetUser, outputFormat, domain, username, password)
-            : GeneratePowerView(targetUser, outputFormat, verbose, domain, username);
+            : GeneratePowerView(targetUser, outputFormat, verbose, domain, username, password, secureMode);
     }
 
     private static string GeneratePowerView(
-        string targetUser, string outputFormat, bool verbose, string domain, string username)
+        string targetUser, string outputFormat, bool verbose, string domain, string username, string password, bool secureMode)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
         List<string> lines = new List<string>();
@@ -31,7 +32,7 @@ public static class KerberoastGenerator
 
         if (useCredential)
         {
-            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
+            lines.AddRange(GeneratorHelpers.CredentialBlock(domain, username, password, secureMode));
         }
 
         lines.Add(GeneratorHelpers.PowerViewImport);
