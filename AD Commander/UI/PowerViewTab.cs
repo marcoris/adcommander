@@ -151,7 +151,7 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         cap.Anchor = AnchorStyles.Left;
         cap.Margin = new Padding(3, 7, 3, 3);
 
-        if (field is TextBox)
+        if (field is TextBox || field is ComboBox)
         {
             field.Width = 310;
         }
