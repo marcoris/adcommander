@@ -89,7 +89,9 @@ public sealed class RemotingTab : UserControl, ICommandTab
             authentication,
             command,
             credential.Domain,
-            credential.Username);
+            credential.Username,
+            credential.Password,
+            credential.SecureMode);
 
         return CommandResult.Ok(script);
     }
