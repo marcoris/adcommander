@@ -33,19 +33,17 @@ public static class AsRepRoastGenerator
 
         if (useCredential)
         {
-            lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(domain)}\\{Ps(username)}', $SecPassword)");
-            lines.Add("");
+            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
         }
 
-        lines.Add("Import-Module .\\PowerView.ps1");
+        lines.Add(GeneratorHelpers.PowerViewImport);
         lines.Add("");
         lines.Add("# Find accounts without Kerberos pre-auth. Switch Tool to Rubeus to also extract the hashes.");
 
         string command = "Get-DomainUser -PreauthNotRequired";
         if (identity.Length > 0)
         {
-            command += $" -Identity '{Ps(identity)}'";
+            command += $" -Identity '{GeneratorHelpers.EscapeSingleQuotes(identity)}'";
         }
         if (properties.Length > 0)
         {
@@ -93,7 +91,4 @@ public static class AsRepRoastGenerator
 
         return string.Join("\r\n", lines);
     }
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
