@@ -45,7 +45,6 @@ public partial class Form1 : Form
         AddCommandTab("Kerberoasting", new KerberoastTab());
         AddCommandTab("AS-REP Roasting", new AsRepRoastTab());
         AddCommandTab("Remoting", new RemotingTab());
-        AddCommandTab("Enumeration", new EnumerationTab());
 
         // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
