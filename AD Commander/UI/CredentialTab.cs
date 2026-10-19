@@ -1,15 +1,16 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using AD_Commander.Models;
 
 namespace AD_Commander.UI;
 
-// The "Credentials" tab: domain, username and a masked password field.
+// The "Credentials" tab: domain, username, a masked password field and the global secure/inline switch.
 // Other tabs reuse these values to build the PowerShell credential object.
 public sealed class CredentialTab : UserControl
 {
     private readonly TextBox _domainBox = new TextBox();
     private readonly TextBox _usernameBox = new TextBox();
     private readonly TextBox _passwordBox = new TextBox();
+    private readonly CheckBox _inlineMode = new CheckBox();
 
     public CredentialTab()
     {
@@ -23,7 +24,7 @@ public sealed class CredentialTab : UserControl
         TableLayoutPanel layout = new TableLayoutPanel();
         layout.Dock = DockStyle.Top;
         layout.ColumnCount = 2;
-        layout.RowCount = 3;
+        layout.RowCount = 4;
         layout.AutoSize = true;
         layout.Padding = new Padding(10);
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110f));
@@ -35,11 +36,17 @@ public sealed class CredentialTab : UserControl
         AddRow(layout, 1, "Username:", _usernameBox);
         AddRow(layout, 2, "Password:", _passwordBox);
 
-        // Short per-field descriptions (spec section 18).
+        _inlineMode.Text = "Insecure inline mode (embed password in the script)";
+        _inlineMode.AutoSize = true;
+        _inlineMode.Margin = new Padding(3, 8, 3, 3);
+        layout.Controls.Add(_inlineMode, 1, 3);
+
+        // Short per-field descriptions.
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_domainBox, "The AD/NetBIOS domain, e.g. INLANEFREIGHT.");
         tips.SetToolTip(_usernameBox, "The user the operation runs as, e.g. wley.");
-        tips.SetToolTip(_passwordBox, "Only used in the explicit inline mode (insecure). Secure mode asks for it in PowerShell.");
+        tips.SetToolTip(_passwordBox, "Only used in inline mode. In secure mode PowerShell asks for it at runtime.");
+        tips.SetToolTip(_inlineMode, "Off (default) = secure: PowerShell asks for the password at runtime. On = the password is written into the script (lab only). Applies to every tab that uses credentials.");
 
         Controls.Add(layout);
     }
@@ -67,7 +74,8 @@ public sealed class CredentialTab : UserControl
         {
             Domain = _domainBox.Text.Trim(),
             Username = _usernameBox.Text.Trim(),
-            Password = _passwordBox.Text
+            Password = _passwordBox.Text,
+            SecureMode = !_inlineMode.Checked
         };
     }
 }
