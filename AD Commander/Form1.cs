@@ -39,7 +39,7 @@ public partial class Form1 : Form
         _tabs.Dock = DockStyle.Fill;
 
         // Add Tabs
-        AddCommandTab("Credentials", new CredentialTab());
+        AddCommandTab("Credentials", _credentialTab);   // same instance OnGenerateClicked reads from
         AddCommandTab("PowerView", new PowerViewTab());
         AddCommandTab("ACL", new AclTab());
         AddCommandTab("Kerberoasting", new KerberoastTab());
