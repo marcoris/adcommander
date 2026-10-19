@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace AD_Commander.Generators;
 
@@ -19,19 +19,17 @@ public static class PowerViewGenerator
 
         if (useCredential)
         {
-            lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(domain)}\\{Ps(username)}', $SecPassword)");
-            lines.Add("");
+            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(domain, username));
         }
 
-        lines.Add("Import-Module .\\PowerView.ps1");
+        lines.Add(GeneratorHelpers.PowerViewImport);
         lines.Add("");
 
         // Only the parameters the user actually filled in are added.
         string command = operation;
         if (identity.Length > 0)
         {
-            command += $" -Identity '{Ps(identity)}'";
+            command += $" -Identity '{GeneratorHelpers.EscapeSingleQuotes(identity)}'";
         }
         if (properties.Length > 0)
         {
@@ -50,7 +48,4 @@ public static class PowerViewGenerator
 
         return string.Join("\r\n", lines);
     }
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
