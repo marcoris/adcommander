@@ -90,7 +90,8 @@ public sealed class AsRepRoastTab : UserControl, ICommandTab
             _verboseBox.Checked,
             credential.Domain,
             credential.Username,
-            credential.Password);
+            credential.Password,
+            credential.SecureMode);
 
         return CommandResult.Ok(script);
     }
