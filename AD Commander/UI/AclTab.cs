@@ -6,12 +6,11 @@ namespace AD_Commander.UI;
 
 // The "ACL" tab. First operation: PowerView Set-DomainUserPassword (ForceChangePassword abuse).
 // Domain/Username/credential password come from the shared Credentials tab; this tab adds the
-// target and the new password, plus the secure/inline switch.
+// target and the new password. Secure vs inline is the global switch on the Credentials tab.
 public sealed class AclTab : UserControl, ICommandTab
 {
     private readonly TextBox _targetIdentityBox = new TextBox();
     private readonly TextBox _newPasswordBox = new TextBox();
-    private readonly CheckBox _inlineMode = new CheckBox();
 
     public AclTab()
     {
@@ -42,15 +41,9 @@ public sealed class AclTab : UserControl, ICommandTab
         AddRow(layout, 1, "Target Identity:", _targetIdentityBox);
         AddRow(layout, 2, "New Password:", _newPasswordBox);
 
-        _inlineMode.Text = "Insecure inline mode (embed passwords in the script)";
-        _inlineMode.AutoSize = true;
-        _inlineMode.Margin = new Padding(3, 8, 3, 3);
-        layout.Controls.Add(_inlineMode, 1, 3);
-
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_targetIdentityBox, "The AD user whose password is changed, e.g. damundsen.");
-        tips.SetToolTip(_newPasswordBox, "The new password for the target. Only used in inline mode.");
-        tips.SetToolTip(_inlineMode, "Off (default) = secure: PowerShell asks for the passwords at runtime. On = passwords are written into the script (lab only).");
+        tips.SetToolTip(_newPasswordBox, "The new password for the target. Only embedded in inline mode.");
 
         Controls.Add(layout);
     }
@@ -74,7 +67,7 @@ public sealed class AclTab : UserControl, ICommandTab
     public CommandResult Generate(CredentialInput credential)
     {
         string targetIdentity = _targetIdentityBox.Text.Trim();
-        bool inline = _inlineMode.Checked;
+        bool inline = !credential.SecureMode;   // global switch on the Credentials tab
 
         if (credential.Domain.Length == 0 || credential.Username.Length == 0)
         {
@@ -88,7 +81,7 @@ public sealed class AclTab : UserControl, ICommandTab
 
         if (inline && (credential.Password.Length == 0 || _newPasswordBox.Text.Length == 0))
         {
-            return CommandResult.Fail("Inline mode needs the Credentials-tab password and a New Password.");
+            return CommandResult.Fail("Inline mode (Credentials tab) needs the Credentials-tab password and a New Password.");
         }
 
         string script = SetDomainUserPasswordGenerator.Generate(
