@@ -19,18 +19,16 @@ public static class EnumerationGenerator
 
         if (useCredential)
         {
-            lines.Add("$SecPassword = Read-Host \"Credential password\" -AsSecureString");
-            lines.Add($"$Cred = New-Object System.Management.Automation.PSCredential('{Ps(credDomain)}\\{Ps(credUsername)}', $SecPassword)");
-            lines.Add("");
+            lines.AddRange(GeneratorHelpers.SecureCredentialBlock(credDomain, credUsername));
         }
 
-        lines.Add("Import-Module .\\PowerView.ps1");
+        lines.Add(GeneratorHelpers.PowerViewImport);
         lines.Add("");
 
         string command = operation;
         if (targetDomain.Length > 0)
         {
-            command += $" -Domain '{Ps(targetDomain)}'";
+            command += $" -Domain '{GeneratorHelpers.EscapeSingleQuotes(targetDomain)}'";
         }
         if (useCredential)
         {
@@ -45,7 +43,4 @@ public static class EnumerationGenerator
 
         return string.Join("\r\n", lines);
     }
-
-    // Escape single quotes so a value can't break out of a PowerShell single-quoted string.
-    private static string Ps(string value) => value.Replace("'", "''");
 }
