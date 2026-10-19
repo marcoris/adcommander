@@ -223,7 +223,9 @@ public sealed class PowerViewTab : UserControl, ICommandTab
             recurse,
             _verboseBox.Checked,
             credential.Domain,
-            credential.Username);
+            credential.Username,
+            credential.Password,
+            credential.SecureMode);
 
         return CommandResult.Ok(script);
     }
