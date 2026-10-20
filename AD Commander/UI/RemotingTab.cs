@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using AD_Commander.Generators;
 using AD_Commander.Models;
 
@@ -73,9 +73,10 @@ public sealed class RemotingTab : UserControl, ICommandTab
         string authentication = _authBox.SelectedItem?.ToString() ?? "Default";
         string command = _commandBox.Text.Trim();
 
-        if (computerName.Length == 0)
+        string? error = Validation.MissingRequired(("ComputerName", computerName));
+        if (error != null)
         {
-            return CommandResult.Fail("Please enter a ComputerName.");
+            return CommandResult.Fail(error);
         }
 
         if (operation == "Invoke-Command" && command.Length == 0)
