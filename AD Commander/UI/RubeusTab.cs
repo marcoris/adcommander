@@ -39,6 +39,18 @@ public sealed class RubeusTab : UserControl, ICommandTab
         ["asreproast"] = new[] { "User", "Domain", "DC", "Format", "OU", "Outfile", "NoWrap" },
     };
 
+    // Command -> fields that must be filled in for a usable command (hard requirements only).
+    private static readonly Dictionary<string, string[]> RequiredFields = new()
+    {
+        ["asktgt"]   = new[] { "User", "SecretValue" },
+        ["asktgs"]   = new[] { "Ticket", "Service" },
+        ["s4u"]      = new[] { "User", "SecretValue", "ImpersonateUser" },
+        ["renew"]    = new[] { "Ticket" },
+        ["ptt"]      = new[] { "Ticket" },
+        ["describe"] = new[] { "Ticket" },
+        ["hash"]     = new[] { "Password" },
+    };
+
     private readonly ComboBox _commandBox = new ComboBox();
 
     private readonly TextBox _userBox = new TextBox();
@@ -198,6 +210,14 @@ public sealed class RubeusTab : UserControl, ICommandTab
         }
     }
 
+    // Human-readable label for a required field key (used in validation messages).
+    private static string LabelFor(string key) => key switch
+    {
+        "SecretValue" => "Secret",
+        "ImpersonateUser" => "Impersonate",
+        _ => key
+    };
+
     public CommandResult Generate(CredentialInput credential)
     {
         // credential (shared Credentials tab) is intentionally unused: Rubeus credentials are per-command.
@@ -211,6 +231,23 @@ public sealed class RubeusTab : UserControl, ICommandTab
         string Val(string key, TextBox box)
             => (_rows.TryGetValue(key, out var r) && r.Visible) ? box.Text.Trim() : "";
 
+        string user = Val("User", _userBox);
+        string secretValue = Val("SecretValue", _secretValueBox);
+        string password = Val("Password", _passwordBox);
+        string domain = Val("Domain", _domainBox);
+        string dc = Val("DC", _dcBox);
+        string service = Val("Service", _serviceBox);
+        string spn = Val("SPN", _spnBox);
+        string ticket = Val("Ticket", _ticketBox);
+        string impersonate = Val("ImpersonateUser", _impersonateBox);
+        string msdsSpn = Val("MSDSSPN", _msdsSpnBox);
+        string altService = Val("AltService", _altServiceBox);
+        string luid = Val("LUID", _luidBox);
+        string server = Val("Server", _serverBox);
+        string target = Val("Target", _targetBox);
+        string ou = Val("OU", _ouBox);
+        string outfile = Val("Outfile", _outfileBox);
+
         string secretType = (_rows.TryGetValue("SecretType", out var st) && st.Visible)
             ? (_secretTypeBox.SelectedItem?.ToString() ?? "Password")
             : "Password";
@@ -222,26 +259,53 @@ public sealed class RubeusTab : UserControl, ICommandTab
         bool ptt = _rows.TryGetValue("PTT", out var pr) && pr.Visible && _pttBox.Checked;
         bool nowrap = _rows.TryGetValue("NoWrap", out var nr) && nr.Visible && _nowrapBox.Checked;
 
+        // Check the command's hard-required fields, if any.
+        if (RequiredFields.TryGetValue(command, out var required))
+        {
+            string ValueFor(string key) => key switch
+            {
+                "User" => user,
+                "SecretValue" => secretValue,
+                "Password" => password,
+                "Ticket" => ticket,
+                "Service" => service,
+                "ImpersonateUser" => impersonate,
+                _ => ""
+            };
+
+            List<(string, string)> pairs = new List<(string, string)>();
+            foreach (string key in required)
+            {
+                pairs.Add((LabelFor(key), ValueFor(key)));
+            }
+
+            string? error = Validation.MissingRequired(pairs.ToArray());
+            if (error != null)
+            {
+                return CommandResult.Fail(command + ": " + error);
+            }
+        }
+
         string script = RubeusGenerator.Generate(
             command,
-            Val("User", _userBox),
+            user,
             secretType,
-            Val("SecretValue", _secretValueBox),
-            Val("Password", _passwordBox),
-            Val("Domain", _domainBox),
-            Val("DC", _dcBox),
-            Val("Service", _serviceBox),
-            Val("SPN", _spnBox),
-            Val("Ticket", _ticketBox),
-            Val("ImpersonateUser", _impersonateBox),
-            Val("MSDSSPN", _msdsSpnBox),
-            Val("AltService", _altServiceBox),
-            Val("LUID", _luidBox),
-            Val("Server", _serverBox),
-            Val("Target", _targetBox),
+            secretValue,
+            password,
+            domain,
+            dc,
+            service,
+            spn,
+            ticket,
+            impersonate,
+            msdsSpn,
+            altService,
+            luid,
+            server,
+            target,
             format,
-            Val("OU", _ouBox),
-            Val("Outfile", _outfileBox),
+            ou,
+            outfile,
             ptt,
             nowrap);
 
