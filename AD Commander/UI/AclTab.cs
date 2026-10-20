@@ -69,14 +69,13 @@ public sealed class AclTab : UserControl, ICommandTab
         string targetIdentity = _targetIdentityBox.Text.Trim();
         bool inline = !credential.SecureMode;   // global switch on the Credentials tab
 
-        if (credential.Domain.Length == 0 || credential.Username.Length == 0)
+        string? error = Validation.MissingRequired(
+            ("Domain", credential.Domain),
+            ("Username", credential.Username),
+            ("Target Identity", targetIdentity));
+        if (error != null)
         {
-            return CommandResult.Fail("Please fill in Domain and Username on the Credentials tab.");
-        }
-
-        if (targetIdentity.Length == 0)
-        {
-            return CommandResult.Fail("Please enter the Target Identity.");
+            return CommandResult.Fail(error);
         }
 
         if (inline && (credential.Password.Length == 0 || _newPasswordBox.Text.Length == 0))
