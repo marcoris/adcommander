@@ -46,6 +46,7 @@ public partial class Form1 : Form
         AddCommandTab("AS-REP Roasting", new AsRepRoastTab());
         AddCommandTab("Rubeus", new RubeusTab());
         AddCommandTab("SharpHound", new SharpHoundTab());
+        AddCommandTab("Certify", new CertifyTab());
         AddCommandTab("Remoting", new RemotingTab());
 
         // --- Row 1: the output area ---
