@@ -1,16 +1,50 @@
+using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using AD_Commander.Generators;
 using AD_Commander.Models;
 
 namespace AD_Commander.UI;
 
-// The "ACL" tab. First operation: PowerView Set-DomainUserPassword (ForceChangePassword abuse).
-// Domain/Username/credential password come from the shared Credentials tab; this tab adds the
-// target and the new password. Secure vs inline is the global switch on the Credentials tab.
+// The "ACL" tab: pick an ACL-abuse operation, then only the fields valid for it are shown.
+// Structure: Operation / Target / Principal / Parameter (spec section 7).
+// Domain/Username/credential password + secure-vs-inline come from the shared Credentials tab.
 public sealed class AclTab : UserControl, ICommandTab
 {
-    private readonly TextBox _targetIdentityBox = new TextBox();
+    private static readonly string[] Operations =
+    {
+        "Set-DomainUserPassword",
+        "Add-DomainGroupMember",
+        "Add-DomainObjectAcl",
+        "Set-DomainObject"
+    };
+
+    // Operation -> which field keys are shown.
+    private static readonly Dictionary<string, string[]> OperationFields = new()
+    {
+        ["Set-DomainUserPassword"] = new[] { "Target", "NewPassword" },
+        ["Add-DomainGroupMember"]  = new[] { "Target", "Principal" },
+        ["Add-DomainObjectAcl"]    = new[] { "Target", "Principal", "Rights" },
+        ["Set-DomainObject"]       = new[] { "Target", "Set" },
+    };
+
+    // Operation -> fields that must be filled in (hard requirements).
+    private static readonly Dictionary<string, string[]> RequiredFields = new()
+    {
+        ["Set-DomainUserPassword"] = new[] { "Target" },
+        ["Add-DomainGroupMember"]  = new[] { "Target", "Principal" },
+        ["Add-DomainObjectAcl"]    = new[] { "Target", "Principal", "Rights" },
+        ["Set-DomainObject"]       = new[] { "Target", "Set" },
+    };
+
+    private readonly ComboBox _operationBox = new ComboBox();
+    private readonly TextBox _targetBox = new TextBox();
+    private readonly TextBox _principalBox = new TextBox();
     private readonly TextBox _newPasswordBox = new TextBox();
+    private readonly ComboBox _rightsBox = new ComboBox();
+    private readonly TextBox _setBox = new TextBox();
+
+    private readonly Dictionary<string, Control> _rows = new();
 
     public AclTab()
     {
@@ -21,76 +55,171 @@ public sealed class AclTab : UserControl, ICommandTab
     {
         Dock = DockStyle.Fill;
 
-        TableLayoutPanel layout = new TableLayoutPanel();
-        layout.Dock = DockStyle.Top;
-        layout.ColumnCount = 2;
-        layout.AutoSize = true;
-        layout.Padding = new Padding(10);
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150f));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 320f));
+        FlowLayoutPanel root = new FlowLayoutPanel();
+        root.Dock = DockStyle.Fill;
+        root.FlowDirection = FlowDirection.TopDown;
+        root.WrapContents = false;
+        root.AutoScroll = true;
+        root.Padding = new Padding(10);
 
-        Label operation = new Label();
-        operation.Text = "Operation: Set-DomainUserPassword";
-        operation.AutoSize = true;
-        operation.Margin = new Padding(3, 3, 3, 10);
-        layout.Controls.Add(operation, 0, 0);
-        layout.SetColumnSpan(operation, 2);
+        _operationBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        foreach (string op in Operations)
+        {
+            _operationBox.Items.Add(op);
+        }
+        _operationBox.SelectedIndexChanged += OnOperationChanged;
+        root.Controls.Add(MakeRow("Operation:", _operationBox));
+
+        _rightsBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        _rightsBox.Items.AddRange(new object[] { "All", "ResetPassword", "WriteMembers", "DCSync" });
+        _rightsBox.SelectedIndex = 0;
 
         _newPasswordBox.UseSystemPasswordChar = true;
 
-        AddRow(layout, 1, "Target Identity:", _targetIdentityBox);
-        AddRow(layout, 2, "New Password:", _newPasswordBox);
+        root.Controls.Add(TrackedRow("Target", "Target Identity:", _targetBox));
+        root.Controls.Add(TrackedRow("Principal", "Principal:", _principalBox));
+        root.Controls.Add(TrackedRow("NewPassword", "New Password:", _newPasswordBox));
+        root.Controls.Add(TrackedRow("Rights", "Rights:", _rightsBox));
+        root.Controls.Add(TrackedRow("Set", "Set (attr=value):", _setBox));
 
         ToolTip tips = new ToolTip();
-        tips.SetToolTip(_targetIdentityBox, "The AD user whose password is changed, e.g. damundsen.");
-        tips.SetToolTip(_newPasswordBox, "The new password for the target. Only embedded in inline mode.");
+        tips.SetToolTip(_operationBox, "The ACL-abuse operation to build.");
+        tips.SetToolTip(_targetBox, "The object the operation acts on: the user (Set password), the group (Add member), or the object whose ACL/attribute you change.");
+        tips.SetToolTip(_principalBox, "The account that benefits: the user to add to the group, or who receives the ACE.");
+        tips.SetToolTip(_newPasswordBox, "The new password for the target user. Only embedded in inline mode.");
+        tips.SetToolTip(_rightsBox, "The right to grant. DCSync = replication rights (secrets dump); ResetPassword; WriteMembers; All.");
+        tips.SetToolTip(_setBox, "Attribute to set, e.g. serviceprincipalname=nonexistent/svc. Becomes -Set @{'attr'='value'}.");
 
-        Controls.Add(layout);
+        Controls.Add(root);
+
+        _operationBox.SelectedIndex = 0;   // triggers OnOperationChanged
     }
 
-    private void AddRow(TableLayoutPanel layout, int row, string labelText, Control field)
+    private Control TrackedRow(string key, string caption, Control field)
     {
-        Label caption = new Label();
-        caption.Text = labelText;
-        caption.AutoSize = true;
-        caption.Anchor = AnchorStyles.Left;
-        caption.Margin = new Padding(3, 7, 3, 3);
-
-        field.Width = 300;
-        field.Anchor = AnchorStyles.Left;
-
-        layout.Controls.Add(caption, 0, row);
-        layout.Controls.Add(field, 1, row);
+        TableLayoutPanel row = MakeRow(caption, field);
+        _rows[key] = row;
+        return row;
     }
 
-    // Validate the inputs, then hand off to the generator.
+    private TableLayoutPanel MakeRow(string caption, Control field)
+    {
+        TableLayoutPanel row = new TableLayoutPanel();
+        row.ColumnCount = 2;
+        row.AutoSize = true;
+        row.Margin = new Padding(0);
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140f));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 330f));
+
+        Label cap = new Label();
+        cap.Text = caption;
+        cap.AutoSize = true;
+        cap.Anchor = AnchorStyles.Left;
+        cap.Margin = new Padding(3, 7, 3, 3);
+
+        if (field is TextBox || field is ComboBox)
+        {
+            field.Width = 310;
+        }
+        field.Anchor = AnchorStyles.Left;
+        field.Margin = new Padding(3, 4, 3, 3);
+
+        row.Controls.Add(cap, 0, 0);
+        row.Controls.Add(field, 1, 0);
+        return row;
+    }
+
+    private void OnOperationChanged(object? sender, EventArgs e)
+    {
+        string op = _operationBox.SelectedItem?.ToString() ?? "";
+        string[] show = OperationFields.TryGetValue(op, out var f) ? f : Array.Empty<string>();
+
+        foreach (KeyValuePair<string, Control> kv in _rows)
+        {
+            kv.Value.Visible = Array.IndexOf(show, kv.Key) >= 0;
+        }
+    }
+
     public CommandResult Generate(CredentialInput credential)
     {
-        string targetIdentity = _targetIdentityBox.Text.Trim();
-        bool inline = !credential.SecureMode;   // global switch on the Credentials tab
+        string operation = _operationBox.SelectedItem?.ToString() ?? "";
+        if (operation.Length == 0)
+        {
+            return CommandResult.Fail("Please select an ACL operation.");
+        }
 
+        string Val(string key, TextBox box)
+            => (_rows.TryGetValue(key, out var r) && r.Visible) ? box.Text.Trim() : "";
+
+        string target = Val("Target", _targetBox);
+        string principal = Val("Principal", _principalBox);
+        string setValue = Val("Set", _setBox);
+        string rights = (_rows.TryGetValue("Rights", out var rr) && rr.Visible)
+            ? (_rightsBox.SelectedItem?.ToString() ?? "")
+            : "";
+        string newPassword = _newPasswordBox.Text; // password: not trimmed
+
+        // Credentials are always required for ACL operations.
         string? error = Validation.MissingRequired(
             ("Domain", credential.Domain),
-            ("Username", credential.Username),
-            ("Target Identity", targetIdentity));
+            ("Username", credential.Username));
         if (error != null)
         {
             return CommandResult.Fail(error);
         }
 
-        if (inline && (credential.Password.Length == 0 || _newPasswordBox.Text.Length == 0))
+        // Operation-specific required fields.
+        if (RequiredFields.TryGetValue(operation, out var required))
+        {
+            string ValueFor(string key) => key switch
+            {
+                "Target" => target,
+                "Principal" => principal,
+                "Rights" => rights,
+                "Set" => setValue,
+                _ => ""
+            };
+
+            List<(string, string)> pairs = new List<(string, string)>();
+            foreach (string key in required)
+            {
+                pairs.Add((LabelFor(key), ValueFor(key)));
+            }
+
+            string? reqError = Validation.MissingRequired(pairs.ToArray());
+            if (reqError != null)
+            {
+                return CommandResult.Fail(operation + ": " + reqError);
+            }
+        }
+
+        // Inline mode only matters for Set-DomainUserPassword (it embeds passwords).
+        if (operation == "Set-DomainUserPassword" && !credential.SecureMode
+            && (credential.Password.Length == 0 || newPassword.Length == 0))
         {
             return CommandResult.Fail("Inline mode (Credentials tab) needs the Credentials-tab password and a New Password.");
         }
 
-        string script = SetDomainUserPasswordGenerator.Generate(
+        string script = AclGenerator.Generate(
+            operation,
+            target,
+            principal,
+            newPassword,
+            rights,
+            setValue,
             credential.Domain,
             credential.Username,
-            targetIdentity,
             credential.Password,
-            _newPasswordBox.Text,
-            secureMode: !inline);
+            credential.SecureMode);
 
         return CommandResult.Ok(script);
     }
+
+    private static string LabelFor(string key) => key switch
+    {
+        "Target" => "Target Identity",
+        "NewPassword" => "New Password",
+        "Set" => "Set",
+        _ => key
+    };
 }
