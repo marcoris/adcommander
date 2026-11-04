@@ -225,7 +225,9 @@ public sealed class PowerViewTab : UserControl, ICommandTab
             credential.Domain,
             credential.Username,
             credential.Password,
-            credential.SecureMode);
+            credential.SecureMode,
+            credential.DownloadPowerView,
+            credential.PowerViewUrl);
 
         return CommandResult.Ok(script);
     }
