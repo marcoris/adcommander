@@ -14,14 +14,16 @@ public static class SharpHoundGenerator
         string outputPrefix,
         bool loop,
         bool stealth,
-        bool zip)
+        bool zip,
+        bool download,
+        string downloadUrl)
     {
         List<string> lines = new List<string>();
 
         lines.Add("# SharpHound (BloodHound CE collector): https://github.com/SpecterOps/SharpHound");
         lines.Add("");
 
-        string cmd = "SharpHound.exe";
+        string cmd = GeneratorHelpers.ExeInvocation("SharpHound.exe", download, downloadUrl);
 
         if (collectionMethods.Count > 0)
         {
@@ -57,6 +59,7 @@ public static class SharpHoundGenerator
             cmd += " --nozip";
         }
 
+        lines.AddRange(GeneratorHelpers.ExeDownloadLines("SharpHound.exe", download, downloadUrl));
         lines.Add(cmd);
 
         return string.Join("\r\n", lines);
