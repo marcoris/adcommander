@@ -28,7 +28,9 @@ public static class RubeusGenerator
         string ou,
         string outfile,
         bool ptt,
-        bool nowrap)
+        bool nowrap,
+        bool download,
+        string downloadUrl)
     {
         List<string> lines = new List<string>();
 
@@ -36,7 +38,7 @@ public static class RubeusGenerator
         lines.Add("# Precompiled binaries: https://github.com/r3motecontrol/Ghostpack-CompiledBinaries");
         lines.Add("");
 
-        string cmd = "Rubeus.exe " + command;
+        string cmd = GeneratorHelpers.ExeInvocation("Rubeus.exe", download, downloadUrl) + " " + command;
 
         if (user.Length > 0)
         {
@@ -123,6 +125,7 @@ public static class RubeusGenerator
             cmd += " /nowrap";
         }
 
+        lines.AddRange(GeneratorHelpers.ExeDownloadLines("Rubeus.exe", download, downloadUrl));
         lines.Add(cmd);
 
         return string.Join("\r\n", lines);
