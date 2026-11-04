@@ -73,6 +73,8 @@ public sealed class RubeusTab : UserControl, ICommandTab
     private readonly TextBox _outfileBox = new TextBox();
     private readonly CheckBox _pttBox = new CheckBox();
     private readonly CheckBox _nowrapBox = new CheckBox();
+    private readonly CheckBox _exeDownloadBox = new CheckBox();
+    private readonly TextBox _exeUrlBox = new TextBox();
 
     // field key -> its row container, so we can show/hide whole rows.
     private readonly Dictionary<string, Control> _rows = new();
@@ -138,6 +140,13 @@ public sealed class RubeusTab : UserControl, ICommandTab
         _nowrapBox.Text = "/nowrap";
         _nowrapBox.AutoSize = true;
         root.Controls.Add(TrackedRow("NoWrap", "", _nowrapBox));
+
+        // .exe delivery (always visible): optionally download Rubeus.exe first, then run .\Rubeus.exe.
+        _exeDownloadBox.Text = "Download Rubeus.exe via iwr";
+        _exeDownloadBox.AutoSize = true;
+        root.Controls.Add(MakeRow("", _exeDownloadBox));
+        _exeUrlBox.Text = "https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe";
+        root.Controls.Add(MakeRow("Download URL:", _exeUrlBox));
 
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_commandBox, "The Rubeus command to build.");
@@ -307,7 +316,9 @@ public sealed class RubeusTab : UserControl, ICommandTab
             ou,
             outfile,
             ptt,
-            nowrap);
+            nowrap,
+            _exeDownloadBox.Checked,
+            _exeUrlBox.Text.Trim());
 
         return CommandResult.Ok(script);
     }
