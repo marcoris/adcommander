@@ -11,4 +11,9 @@ public sealed class CredentialInput
     public string Username { get; set; } = "";
     public string Password { get; set; } = "";
     public bool SecureMode { get; set; } = true;
+
+    // Global PowerView delivery (used by every PowerView-based tab): load it from PowerViewUrl via
+    // an in-memory IEX cradle instead of a local Import-Module. Off by default.
+    public bool DownloadPowerView { get; set; } = false;
+    public string PowerViewUrl { get; set; } = "";
 }
