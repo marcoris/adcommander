@@ -11,6 +11,9 @@ namespace AD_Commander.UI;
 // shared Credentials tab. Text generation only; nothing is executed.
 public sealed class RubeusTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     // Commands offered in the first pass (spec section 4).
     private static readonly string[] Commands =
     {
