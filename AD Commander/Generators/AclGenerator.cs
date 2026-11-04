@@ -18,12 +18,14 @@ public static class AclGenerator
         string credDomain,
         string credUsername,
         string credPassword,
-        bool secureMode)
+        bool secureMode,
+        bool download,
+        string downloadUrl)
     {
         if (operation == "Set-DomainUserPassword")
         {
             return SetDomainUserPasswordGenerator.Generate(
-                credDomain, credUsername, target, credPassword, newPassword, secureMode);
+                credDomain, credUsername, target, credPassword, newPassword, secureMode, download, downloadUrl);
         }
 
         bool useCredential = credDomain.Length > 0 && credUsername.Length > 0;
@@ -34,7 +36,7 @@ public static class AclGenerator
             lines.AddRange(GeneratorHelpers.CredentialBlock(credDomain, credUsername, credPassword, secureMode));
         }
 
-        lines.Add(GeneratorHelpers.PowerViewImport);
+        lines.Add(GeneratorHelpers.PowerViewImportLine(download, downloadUrl));
         lines.Add("");
 
         string command = BuildCommand(operation, target, principal, rights, setValue);
