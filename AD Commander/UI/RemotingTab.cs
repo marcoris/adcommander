@@ -8,7 +8,7 @@ namespace AD_Commander.UI;
 public sealed class RemotingTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.CredentialAccess;
     
     private readonly ComboBox _operationBox = new ComboBox();
     private readonly TextBox _computerNameBox = new TextBox();
