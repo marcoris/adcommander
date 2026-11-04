@@ -1,4 +1,4 @@
-﻿using AD_Commander.Models;
+using AD_Commander.Models;
 
 namespace AD_Commander.UI;
 
@@ -7,4 +7,9 @@ namespace AD_Commander.UI;
 public interface ICommandTab
 {
     CommandResult Generate(CredentialInput credential);
+
+    // Attack-path metadata: where this tab sits in the kill chain (navigator grouping + order).
+    // Default = credentialed enumeration; each tab overrides as appropriate.
+    AttackStrang Strang => AttackStrang.Credentialed;
+    AttackPhase Phase => AttackPhase.Enumeration;
 }
