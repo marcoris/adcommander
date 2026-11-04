@@ -11,6 +11,9 @@ namespace AD_Commander.UI;
 // Text generation only; nothing is executed.
 public sealed class CertifyTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     private static readonly string[] Verbs =
     {
         "enum-templates", "enum-cas",
