@@ -12,7 +12,7 @@ namespace AD_Commander.UI;
 public sealed class RubeusTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.Kerberos;
     
     // Commands offered in the first pass (spec section 4).
     private static readonly string[] Commands =
