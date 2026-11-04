@@ -11,6 +11,8 @@ public sealed class CredentialTab : UserControl
     private readonly TextBox _usernameBox = new TextBox();
     private readonly TextBox _passwordBox = new TextBox();
     private readonly CheckBox _inlineMode = new CheckBox();
+    private readonly CheckBox _pvDownloadMode = new CheckBox();
+    private readonly TextBox _pvUrlBox = new TextBox();
 
     public CredentialTab()
     {
@@ -24,11 +26,11 @@ public sealed class CredentialTab : UserControl
         TableLayoutPanel layout = new TableLayoutPanel();
         layout.Dock = DockStyle.Top;
         layout.ColumnCount = 2;
-        layout.RowCount = 4;
+        layout.RowCount = 6;
         layout.AutoSize = true;
         layout.Padding = new Padding(10);
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110f));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 320f));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 440f));
 
         _passwordBox.UseSystemPasswordChar = true; // real password field (input is masked)
 
@@ -41,12 +43,23 @@ public sealed class CredentialTab : UserControl
         _inlineMode.Margin = new Padding(3, 8, 3, 3);
         layout.Controls.Add(_inlineMode, 1, 3);
 
+        // Global PowerView delivery (applies to PowerView, ACL, Kerberoast(PV), AS-REP(PV)).
+        _pvDownloadMode.Text = "Download PowerView via IEX cradle (all PowerView tabs)";
+        _pvDownloadMode.AutoSize = true;
+        _pvDownloadMode.Margin = new Padding(3, 8, 3, 3);
+        layout.Controls.Add(_pvDownloadMode, 1, 4);
+
+        _pvUrlBox.Text = "https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/dev/Recon/PowerView.ps1";
+        AddRow(layout, 5, "PowerView URL:", _pvUrlBox);
+
         // Short per-field descriptions.
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_domainBox, "The AD/NetBIOS domain, e.g. INLANEFREIGHT.");
         tips.SetToolTip(_usernameBox, "The user the operation runs as, e.g. wley.");
         tips.SetToolTip(_passwordBox, "Only used in inline mode. In secure mode PowerShell asks for it at runtime.");
         tips.SetToolTip(_inlineMode, "Off (default) = secure: PowerShell asks for the password at runtime. On = the password is written into the script (lab only). Applies to every tab that uses credentials.");
+        tips.SetToolTip(_pvDownloadMode, "On = load PowerView from the URL below in memory (IEX cradle) instead of Import-Module .\\PowerView.ps1. Applies to all PowerView-based tabs.");
+        tips.SetToolTip(_pvUrlBox, "URL to PowerView.ps1. Default is the official PowerSploit source; change it to your own host for internal engagements.");
 
         Controls.Add(layout);
     }
@@ -60,7 +73,7 @@ public sealed class CredentialTab : UserControl
         caption.Anchor = AnchorStyles.Left;
         caption.Margin = new Padding(3, 7, 3, 3);
 
-        box.Width = 300;
+        box.Width = (box == _pvUrlBox) ? 420 : 300;
         box.Anchor = AnchorStyles.Left;
 
         layout.Controls.Add(caption, 0, row);
@@ -75,7 +88,9 @@ public sealed class CredentialTab : UserControl
             Domain = _domainBox.Text.Trim(),
             Username = _usernameBox.Text.Trim(),
             Password = _passwordBox.Text,
-            SecureMode = !_inlineMode.Checked
+            SecureMode = !_inlineMode.Checked,
+            DownloadPowerView = _pvDownloadMode.Checked,
+            PowerViewUrl = _pvUrlBox.Text.Trim()
         };
     }
 }
