@@ -21,7 +21,9 @@ public static class PowerViewGenerator
         string credDomain,
         string credUsername,
         string credPassword,
-        bool secureMode)
+        bool secureMode,
+        bool download,
+        string downloadUrl)
     {
         bool useCredential = credDomain.Length > 0 && credUsername.Length > 0;
         List<string> lines = new List<string>();
@@ -31,7 +33,7 @@ public static class PowerViewGenerator
             lines.AddRange(GeneratorHelpers.CredentialBlock(credDomain, credUsername, credPassword, secureMode));
         }
 
-        lines.Add(GeneratorHelpers.PowerViewImport);
+        lines.Add(GeneratorHelpers.PowerViewImportLine(download, downloadUrl));
         lines.Add("");
 
         // Only the parameters the user actually filled in (and that are valid for the function) are added.
