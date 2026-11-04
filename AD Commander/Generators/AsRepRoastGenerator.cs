@@ -16,15 +16,15 @@ public static class AsRepRoastGenerator
         string domain,
         string username,
         string password,
-        bool secureMode)
+        bool secureMode, bool download, string downloadUrl)
     {
         return tool == "Rubeus"
             ? GenerateRubeus(identity, outputFormat, domain, username, password)
-            : GeneratePowerView(identity, properties, verbose, domain, username, password, secureMode);
+            : GeneratePowerView(identity, properties, verbose, domain, username, password, secureMode, download, downloadUrl);
     }
 
     private static string GeneratePowerView(
-        string identity, string properties, bool verbose, string domain, string username, string password, bool secureMode)
+        string identity, string properties, bool verbose, string domain, string username, string password, bool secureMode, bool download, string downloadUrl)
     {
         bool useCredential = domain.Length > 0 && username.Length > 0;
         List<string> lines = new List<string>();
@@ -37,7 +37,7 @@ public static class AsRepRoastGenerator
             lines.AddRange(GeneratorHelpers.CredentialBlock(domain, username, password, secureMode));
         }
 
-        lines.Add(GeneratorHelpers.PowerViewImport);
+        lines.Add(GeneratorHelpers.PowerViewImportLine(download, downloadUrl));
         lines.Add("");
         lines.Add("# Find accounts without Kerberos pre-auth. Switch Tool to Rubeus to also extract the hashes.");
 
