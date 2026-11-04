@@ -49,4 +49,15 @@ public static class GeneratorHelpers
         => (download && url.Length > 0)
             ? $"IEX (New-Object Net.WebClient).DownloadString('{EscapeSingleQuotes(url)}')"
             : PowerViewImport;
+
+    // For .exe tools: when download is on, the iwr line that fetches the exe to the current dir.
+    // Empty when off. Prepend these lines before the command.
+    public static List<string> ExeDownloadLines(string exeName, bool download, string url)
+        => (download && url.Length > 0)
+            ? new List<string> { $"iwr '{EscapeSingleQuotes(url)}' -OutFile .\\{exeName}", "" }
+            : new List<string>();
+
+    // The token used to invoke the exe: ".\Tool.exe" when just downloaded, else "Tool.exe".
+    public static string ExeInvocation(string exeName, bool download, string url)
+        => (download && url.Length > 0) ? ".\\" + exeName : exeName;
 }
