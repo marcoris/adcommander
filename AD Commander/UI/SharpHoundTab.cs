@@ -28,6 +28,8 @@ public sealed class SharpHoundTab : UserControl, ICommandTab
     private readonly CheckBox _loopBox = new CheckBox();
     private readonly CheckBox _stealthBox = new CheckBox();
     private readonly CheckBox _zipBox = new CheckBox();
+    private readonly CheckBox _exeDownloadBox = new CheckBox();
+    private readonly TextBox _exeUrlBox = new TextBox();
 
     public SharpHoundTab()
     {
@@ -80,6 +82,13 @@ public sealed class SharpHoundTab : UserControl, ICommandTab
         _zipBox.Text = "Zip output (uncheck for --nozip)";
         _zipBox.AutoSize = true;
         AddCheck(layout, 7, _zipBox);
+
+        // .exe delivery: optionally download SharpHound.exe first, then run .\SharpHound.exe.
+        _exeDownloadBox.Text = "Download SharpHound.exe via iwr";
+        _exeDownloadBox.AutoSize = true;
+        AddCheck(layout, 8, _exeDownloadBox);
+        _exeUrlBox.Text = "http://10.10.14.5:8000/SharpHound.exe";
+        AddRow(layout, 9, "Download URL:", _exeUrlBox);
 
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_methodsBox, "Which collection methods to run. 'Default' is a sensible baseline; combine as needed.");
@@ -137,7 +146,9 @@ public sealed class SharpHoundTab : UserControl, ICommandTab
             _outputPrefixBox.Text.Trim(),
             _loopBox.Checked,
             _stealthBox.Checked,
-            _zipBox.Checked);
+            _zipBox.Checked,
+            _exeDownloadBox.Checked,
+            _exeUrlBox.Text.Trim());
 
         return CommandResult.Ok(script);
     }
