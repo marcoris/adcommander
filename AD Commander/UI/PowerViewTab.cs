@@ -11,7 +11,7 @@ namespace AD_Commander.UI;
 public sealed class PowerViewTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.Enumeration;
     
     // Group -> its functions (order preserved).
     private static readonly (string Group, string[] Functions)[] Groups =
