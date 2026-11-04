@@ -7,6 +7,9 @@ namespace AD_Commander.UI;
 // The "Remoting" tab: Enter-PSSession / Invoke-Command / New-PSSession.
 public sealed class RemotingTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     private readonly ComboBox _operationBox = new ComboBox();
     private readonly TextBox _computerNameBox = new TextBox();
     private readonly ComboBox _authBox = new ComboBox();
