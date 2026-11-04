@@ -9,6 +9,9 @@ namespace AD_Commander.UI;
 // Collection methods are multi-select; the rest maps to the common SharpHound flags.
 public sealed class SharpHoundTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     // Collection methods from the real SharpHound Options (order as defined there).
     private static readonly string[] Methods =
     {
