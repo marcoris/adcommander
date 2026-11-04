@@ -12,7 +12,7 @@ namespace AD_Commander.UI;
 public sealed class CertifyTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.ADCS;
     
     private static readonly string[] Verbs =
     {
