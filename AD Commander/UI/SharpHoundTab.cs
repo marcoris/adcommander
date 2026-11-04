@@ -10,7 +10,7 @@ namespace AD_Commander.UI;
 public sealed class SharpHoundTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.Enumeration;
     
     // Collection methods from the real SharpHound Options (order as defined there).
     private static readonly string[] Methods =
