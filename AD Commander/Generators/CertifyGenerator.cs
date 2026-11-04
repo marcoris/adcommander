@@ -26,13 +26,15 @@ public static class CertifyGenerator
         string subject,
         bool filterVulnerable,
         bool filterEnabled,
-        bool machine)
+        bool machine,
+        bool download,
+        string downloadUrl)
     {
         List<string> lines = new List<string>();
         lines.Add("# Certify 2.0 (GhostPack): https://github.com/GhostPack/Certify");
         lines.Add("");
 
-        List<string> parts = new List<string> { "Certify.exe", verb };
+        List<string> parts = new List<string> { GeneratorHelpers.ExeInvocation("Certify.exe", download, downloadUrl), verb };
 
         Opt(parts, "username", username);
         Opt(parts, "password", password);
@@ -63,6 +65,7 @@ public static class CertifyGenerator
             parts.Add("--machine");
         }
 
+        lines.AddRange(GeneratorHelpers.ExeDownloadLines("Certify.exe", download, downloadUrl));
         lines.Add(string.Join(" ", parts));
 
         return string.Join("\r\n", lines);
