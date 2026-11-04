@@ -11,6 +11,9 @@ namespace AD_Commander.UI;
 // Domain/Username/credential password + secure-vs-inline come from the shared Credentials tab.
 public sealed class AclTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     private static readonly string[] Operations =
     {
         "Set-DomainUserPassword",
