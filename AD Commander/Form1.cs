@@ -14,6 +14,7 @@ public partial class Form1 : Form
     private readonly CredentialTab _credentialTab = new CredentialTab();
     private readonly TreeView _navigator = new TreeView();
     private readonly Panel _contentPanel = new Panel();
+    private readonly GuidancePanel _guidance = new GuidancePanel();
 
     // Registered operation tabs (title + control). Credentials is NOT here — it is fixed top-left.
     private readonly List<(string Title, UserControl Control)> _tabs = new();
@@ -48,13 +49,14 @@ public partial class Form1 : Form
         split.Dock = DockStyle.Fill;
         split.FixedPanel = FixedPanel.Panel1;
 
-        // --- Left: Credentials button (fixed) + navigator tree ---
+        // --- Left: Credentials button (fixed) + navigator tree + guidance panel ---
         TableLayoutPanel left = new TableLayoutPanel();
         left.Dock = DockStyle.Fill;
         left.ColumnCount = 1;
-        left.RowCount = 2;
+        left.RowCount = 3;
         left.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));
         left.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 140f));
 
         Button credButton = new Button();
         credButton.Text = "Credentials";
@@ -65,8 +67,11 @@ public partial class Form1 : Form
         _navigator.HideSelection = false;
         _navigator.AfterSelect += OnNavigatorSelect;
 
+        _guidance.StateChanged += OnOperatorStateChanged;
+
         left.Controls.Add(credButton, 0, 0);
         left.Controls.Add(_navigator, 0, 1);
+        left.Controls.Add(_guidance, 0, 2);
         split.Panel1.Controls.Add(left);
 
         // --- Right: content area + output + buttons ---
@@ -125,6 +130,7 @@ public partial class Form1 : Form
         split.SplitterDistance = 220;
 
         BuildNavigator();
+        UpdateNavigatorGating();
         ShowControl(_credentialTab);   // start on the Credentials screen
     }
 
@@ -143,6 +149,7 @@ public partial class Form1 : Form
         foreach (AttackStrang strang in order)
         {
             TreeNode strangNode = new TreeNode(StrangLabel(strang));
+            strangNode.Tag = strang;
 
             IEnumerable<(string Title, UserControl Control)> inStrang = _tabs
                 .Where(t => t.Control is ICommandTab ct && ct.Strang == strang)
@@ -201,6 +208,35 @@ public partial class Form1 : Form
 
         control.BringToFront();
         _activeControl = control;
+    }
+
+    private void OnOperatorStateChanged(object? sender, EventArgs e)
+    {
+        UpdateNavigatorGating();
+    }
+
+    // Grey out strands (and their tabs) that the current operator state can't reach yet. Guidance only.
+    private void UpdateNavigatorGating()
+    {
+        OperatorState state = _guidance.CurrentState;
+        foreach (TreeNode strangNode in _navigator.Nodes)
+        {
+            if (strangNode.Tag is AttackStrang strang)
+            {
+                bool available = AttackFlow.IsAvailable(strang, state);
+                string baseLabel = StrangLabel(strang);
+                strangNode.Text = available
+                    ? baseLabel
+                    : baseLabel + "  (locked: " + AttackFlow.LockReason(strang) + ")";
+
+                Color color = available ? SystemColors.WindowText : SystemColors.GrayText;
+                strangNode.ForeColor = color;
+                foreach (TreeNode leaf in strangNode.Nodes)
+                {
+                    leaf.ForeColor = color;
+                }
+            }
+        }
     }
 
     // Ask the active tab to generate, passing in the shared credentials.
