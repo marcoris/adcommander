@@ -11,8 +11,8 @@ namespace AD_Commander.UI;
 // Credentials + global PowerView delivery come from the Credentials tab. Nothing is executed.
 public sealed class CleanupTab : UserControl, ICommandTab
 {
-    public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackStrang Strang => AttackStrang.Cleanup;
+    public AttackPhase Phase => AttackPhase.Cleanup;
     
     private readonly CheckBox _removeSpnBox = new CheckBox();
     private readonly CheckBox _removeGroupBox = new CheckBox();
