@@ -10,6 +10,9 @@ namespace AD_Commander.UI;
 // selected function are shown (spec section 3). One generator covers all functions.
 public sealed class PowerViewTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     // Group -> its functions (order preserved).
     private static readonly (string Group, string[] Functions)[] Groups =
     {
