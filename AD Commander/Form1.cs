@@ -48,6 +48,7 @@ public partial class Form1 : Form
         AddCommandTab("SharpHound", new SharpHoundTab());
         AddCommandTab("Certify", new CertifyTab());
         AddCommandTab("Remoting", new RemotingTab());
+        AddCommandTab("Cleanup", new CleanupTab());
 
         // --- Row 1: the output area ---
         _outputBox.Dock = DockStyle.Fill;
