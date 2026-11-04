@@ -86,7 +86,9 @@ public sealed class KerberoastTab : UserControl, ICommandTab
             credential.Domain,
             credential.Username,
             credential.Password,
-            credential.SecureMode);
+            credential.SecureMode,
+            credential.DownloadPowerView,
+            credential.PowerViewUrl);
 
         return CommandResult.Ok(script);
     }
