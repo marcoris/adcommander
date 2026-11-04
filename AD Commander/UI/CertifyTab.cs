@@ -56,6 +56,8 @@ public sealed class CertifyTab : UserControl, ICommandTab
     private readonly CheckBox _filterVulnBox = new CheckBox();
     private readonly CheckBox _filterEnabledBox = new CheckBox();
     private readonly CheckBox _machineBox = new CheckBox();
+    private readonly CheckBox _exeDownloadBox = new CheckBox();
+    private readonly TextBox _exeUrlBox = new TextBox();
 
     private readonly Dictionary<string, Control> _rows = new();
 
@@ -114,6 +116,13 @@ public sealed class CertifyTab : UserControl, ICommandTab
         _machineBox.Text = "--machine (machine template)";
         _machineBox.AutoSize = true;
         root.Controls.Add(TrackedRow("Machine", "", _machineBox));
+
+        // .exe delivery (always visible): optionally download Certify.exe first, then run .\Certify.exe.
+        _exeDownloadBox.Text = "Download Certify.exe via iwr";
+        _exeDownloadBox.AutoSize = true;
+        root.Controls.Add(MakeRow("", _exeDownloadBox));
+        _exeUrlBox.Text = "http://10.10.14.5:8000/Certify.exe";
+        root.Controls.Add(MakeRow("Download URL:", _exeUrlBox));
 
         ToolTip tips = new ToolTip();
         tips.SetToolTip(_verbBox, "The Certify command to build.");
@@ -244,7 +253,8 @@ public sealed class CertifyTab : UserControl, ICommandTab
         string script = CertifyGenerator.Generate(
             verb, username, password, domain, ca, template, upn, dns, sid,
             target, agentPfx, agentPass, id, caCert, caPass, subject,
-            filterVuln, filterEnabled, machine);
+            filterVuln, filterEnabled, machine,
+            _exeDownloadBox.Checked, _exeUrlBox.Text.Trim());
 
         return CommandResult.Ok(script);
     }
