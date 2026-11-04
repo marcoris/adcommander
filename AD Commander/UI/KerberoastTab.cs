@@ -7,6 +7,9 @@ namespace AD_Commander.UI;
 // The "Kerberoasting" tab: PowerView Invoke-Kerberoast or Rubeus kerberoast.
 public sealed class KerberoastTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     private readonly ComboBox _toolBox = new ComboBox();
     private readonly TextBox _targetUserBox = new TextBox();
     private readonly ComboBox _outputFormatBox = new ComboBox();
