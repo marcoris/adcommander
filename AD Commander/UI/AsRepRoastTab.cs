@@ -7,6 +7,9 @@ namespace AD_Commander.UI;
 // The "AS-REP Roasting" tab: PowerView enumeration or Rubeus asreproast.
 public sealed class AsRepRoastTab : UserControl, ICommandTab
 {
+    public AttackStrang Strang => AttackStrang.Credentialed;
+    public AttackPhase Phase => AttackPhase.AclAbuse;
+    
     private readonly ComboBox _toolBox = new ComboBox();
     private readonly TextBox _identityBox = new TextBox();
     private readonly ComboBox _outputFormatBox = new ComboBox();
