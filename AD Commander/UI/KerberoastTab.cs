@@ -8,7 +8,7 @@ namespace AD_Commander.UI;
 public sealed class KerberoastTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
-    public AttackPhase Phase => AttackPhase.AclAbuse;
+    public AttackPhase Phase => AttackPhase.Kerberos;
     
     private readonly ComboBox _toolBox = new ComboBox();
     private readonly TextBox _targetUserBox = new TextBox();
