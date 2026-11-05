@@ -40,8 +40,8 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $mode = if ('${{ matrix.selfcontained }}' -eq 'true') { 'selfcontained' } else { 'framework' }
-          $name = "AD-Commander-${{ matrix.rid }}-$mode"
+          $mode = if ('${{ matrix.selfcontained }}' -eq 'true') { 'sc' } else { 'fw' }
+          $name = "AD-Commander-${{ matrix.rid }}-$mode-${{ github.ref_name }}"
           Compress-Archive -Path publish/* -DestinationPath "$name.zip" -Force
 
       - uses: actions/upload-artifact@v5
@@ -63,5 +63,6 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
+          name: AD-Commander ${{ github.ref_name }}
           files: dist/*.zip
           generate_release_notes: true
