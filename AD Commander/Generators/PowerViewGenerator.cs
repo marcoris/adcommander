@@ -13,6 +13,7 @@ public static class PowerViewGenerator
         string properties,
         string domain,
         string ldapFilter,
+        string uacFilter,
         string server,
         string computerName,
         string forest,
@@ -60,6 +61,11 @@ public static class PowerViewGenerator
         if (ldapFilter.Length > 0)
         {
             command += $" -LDAPFilter '{GeneratorHelpers.EscapeSingleQuotes(ldapFilter)}'";
+        }
+        if (uacFilter.Length > 0)
+        {
+            // PowerView's own UAC filter: takes the flag name, builds the bitwise filter internally.
+            command += $" -UACFilter {uacFilter}";
         }
         if (computerName.Length > 0)
         {
