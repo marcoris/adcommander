@@ -12,7 +12,7 @@ public sealed class PowerViewTab : UserControl, ICommandTab
 {
     public AttackStrang Strang => AttackStrang.Credentialed;
     public AttackPhase Phase => AttackPhase.Enumeration;
-    
+
     // Group -> its functions (order preserved).
     private static readonly (string Group, string[] Functions)[] Groups =
     {
@@ -34,16 +34,31 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         ["Get-DomainTrust"]        = new[] { "Properties", "Domain", "LDAPFilter", "Server" },
         ["Get-Forest"]             = new[] { "Forest" },
         ["Get-ForestDomain"]       = new[] { "Forest" },
-        ["Get-DomainUser"]         = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "Server" },
-        ["Get-DomainObject"]       = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "Server" },
+        ["Get-DomainUser"]         = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "UACFilter", "Server" },
+        ["Get-DomainObject"]       = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "UACFilter", "Server" },
         ["Get-DomainGroup"]        = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "Server" },
         ["Get-DomainGroupMember"]  = new[] { "Identity", "Domain", "LDAPFilter", "Server", "Recurse" },
-        ["Get-DomainComputer"]     = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "Server" },
+        ["Get-DomainComputer"]     = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "UACFilter", "Server" },
         ["Get-DomainGPO"]          = new[] { "Identity", "Properties", "Domain", "LDAPFilter", "Server" },
         ["Get-DomainGPOLocalGroup"]= new[] { "Identity", "Domain", "LDAPFilter", "Server" },
         ["Find-DomainShare"]       = new[] { "ComputerName", "Server" },
         ["Find-LocalAdminAccess"]  = new[] { "ComputerName", "Server" },
         ["Find-DomainUserLocation"]= new[] { "Identity", "Domain", "ComputerName", "Server" },
+    };
+
+    // Common userAccountControl flags (name -> bit value). Selecting one fills the LDAP Filter field
+    // with the matching bitwise filter; "(none)" leaves it untouched.
+    private static readonly (string Name, long Value)[] UacFlags =
+    {
+        ("(none)", 0),
+        ("DONT_REQ_PREAUTH", 4194304),
+        ("PASSWD_NOTREQD", 32),
+        ("TRUSTED_FOR_DELEGATION", 524288),
+        ("TRUSTED_TO_AUTH_FOR_DELEGATION", 16777216),
+        ("NOT_DELEGATED", 1048576),
+        ("DONT_EXPIRE_PASSWORD", 65536),
+        ("ACCOUNTDISABLE", 2),
+        ("SMARTCARD_REQUIRED", 262144),
     };
 
     private readonly ComboBox _groupBox = new ComboBox();
@@ -56,6 +71,7 @@ public sealed class PowerViewTab : UserControl, ICommandTab
     private readonly TextBox _serverBox = new TextBox();
     private readonly TextBox _computerNameBox = new TextBox();
     private readonly TextBox _forestBox = new TextBox();
+    private readonly ComboBox _uacFilterBox = new ComboBox();
     private readonly CheckBox _recurseBox = new CheckBox();
     private readonly CheckBox _verboseBox = new CheckBox();
 
@@ -94,10 +110,19 @@ public sealed class PowerViewTab : UserControl, ICommandTab
 
         // Dynamic fields (shown/hidden per function).
         _propertiesBox.Text = "*";
+
+        _uacFilterBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        foreach ((string Name, long Value) f in UacFlags)
+        {
+            _uacFilterBox.Items.Add(f.Name);
+        }
+        _uacFilterBox.SelectedIndex = 0;
+        _uacFilterBox.SelectedIndexChanged += OnUacFilterChanged;
         root.Controls.Add(TrackedRow("Identity", "Identity:", _identityBox));
         root.Controls.Add(TrackedRow("Properties", "Properties:", _propertiesBox));
         root.Controls.Add(TrackedRow("Domain", "Domain (FQDN):", _domainBox));
         root.Controls.Add(TrackedRow("LDAPFilter", "LDAP Filter:", _ldapFilterBox));
+        root.Controls.Add(TrackedRow("UACFilter", "UAC Filter:", _uacFilterBox));
         root.Controls.Add(TrackedRow("Server", "Server (DC):", _serverBox));
         root.Controls.Add(TrackedRow("ComputerName", "ComputerName:", _computerNameBox));
         root.Controls.Add(TrackedRow("Forest", "Forest:", _forestBox));
@@ -119,6 +144,7 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         tips.SetToolTip(_propertiesBox, "Attributes to return. '*' = all; or a comma list like samaccountname,memberof.");
         tips.SetToolTip(_domainBox, "Target domain FQDN, e.g. inlanefreight.local. Empty = current domain.");
         tips.SetToolTip(_ldapFilterBox, "Raw LDAP filter, e.g. (admincount=1).");
+        tips.SetToolTip(_uacFilterBox, "Pick a userAccountControl flag; it fills the LDAP Filter above with the matching bitwise filter.");
         tips.SetToolTip(_serverBox, "Specific domain controller / LDAP server to query.");
         tips.SetToolTip(_computerNameBox, "Target host(s) to check. Empty = all computers in the domain.");
         tips.SetToolTip(_forestBox, "Target forest name. Empty = current forest.");
@@ -164,6 +190,19 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         row.Controls.Add(cap, 0, 0);
         row.Controls.Add(field, 1, 0);
         return row;
+    }
+
+    // Variant A: a chosen UAC flag fills the LDAP Filter field with its bitwise filter.
+    private void OnUacFilterChanged(object? sender, EventArgs e)
+    {
+        int idx = _uacFilterBox.SelectedIndex;
+        if (idx <= 0)
+        {
+            return;   // "(none)": leave whatever is in the LDAP Filter field
+        }
+
+        long value = UacFlags[idx].Value;
+        _ldapFilterBox.Text = $"(userAccountControl:1.2.840.113556.1.4.803:={value})";
     }
 
     private void OnGroupChanged(object? sender, EventArgs e)
