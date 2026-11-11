@@ -56,7 +56,7 @@ public partial class Form1 : Form
         left.RowCount = 3;
         left.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));
         left.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
-        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 140f));
+        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 220f));
 
         Button credButton = new Button();
         credButton.Text = "Credentials";
@@ -208,7 +208,30 @@ public partial class Form1 : Form
 
         control.BringToFront();
         _activeControl = control;
+
+        if (control is ICommandTab ct)
+        {
+            _guidance.SetHint(PhaseHint(ct.Phase));
+        }
+        else
+        {
+            _guidance.SetHint("Enter the domain user you operate as. Secure mode (default) asks for the password at runtime; inline embeds it - lab only.");
+        }
     }
+
+    // Short "what you do here / what you're looking for" hint per kill-chain phase.
+    private static string PhaseHint(AttackPhase phase) => phase switch
+    {
+        AttackPhase.NoCredEnumeration => "Map the domain before you have credentials.",
+        AttackPhase.NoCredAttacks => "Grab AS-REP hashes for accounts without Kerberos pre-auth (DONT_REQ_PREAUTH) - no login needed, crack them offline.",
+        AttackPhase.Enumeration => "The core step: map users, groups, ACLs and sessions. Look for weak accounts, excessive rights and paths toward Domain Admin.",
+        AttackPhase.Kerberos => "Request service tickets for SPNs and crack them offline; request or forge Kerberos tickets.",
+        AttackPhase.CredentialAccess => "Use your credentials to run commands on remote hosts.",
+        AttackPhase.AclAbuse => "Abuse write rights (GenericWrite / WriteDacl) on objects to take over users/groups or grant yourself DCSync.",
+        AttackPhase.ADCS => "Find and abuse misconfigured certificate templates (ESC1-8) to impersonate privileged users.",
+        AttackPhase.Cleanup => "Undo the temporary changes you made - SPN, group membership, password - in a fixed, safe order.",
+        _ => ""
+    };
 
     private void OnOperatorStateChanged(object? sender, EventArgs e)
     {
