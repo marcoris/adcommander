@@ -58,6 +58,8 @@ public static class GeneratorHelpers
             : new List<string>();
 
     // The token used to invoke the exe: ".\Tool.exe" when just downloaded, else "Tool.exe".
-    public static string ExeInvocation(string exeName, bool download, string url)
-        => (download && url.Length > 0) ? ".\\" + exeName : exeName;
+        // The token used to invoke the exe. Always ".\Tool.exe": PowerShell will not run an exe from
+    // the current directory by name alone (the current dir is not on PATH), so the .\ prefix is required.
+    public static string ExeInvocation(string exeName)
+        => ".\\" + exeName;
 }
