@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using AD_Commander.Models;
 
@@ -12,6 +13,7 @@ public sealed class GuidancePanel : UserControl
     private readonly CheckBox _domainUser = new CheckBox();
     private readonly CheckBox _localAdmin = new CheckBox();
     private readonly CheckBox _domainAdmin = new CheckBox();
+    private readonly Label _hintLabel = new Label();
 
     public event EventHandler? StateChanged;
 
@@ -43,6 +45,11 @@ public sealed class GuidancePanel : UserControl
         root.WrapContents = false;
         root.Padding = new Padding(6, 4, 4, 4);
 
+        _hintLabel.AutoSize = true;
+        _hintLabel.MaximumSize = new Size(200, 0);
+        _hintLabel.Margin = new Padding(3, 3, 3, 8);
+        root.Controls.Add(_hintLabel);
+
         Label header = new Label();
         header.Text = "Operator state (what you've reached):";
         header.AutoSize = true;
@@ -55,6 +62,12 @@ public sealed class GuidancePanel : UserControl
         AddCheck(root, _domainAdmin, "Domain admin");
 
         Controls.Add(root);
+    }
+
+    // Form1 sets a short "what you do here" hint for the current tab/phase.
+    public void SetHint(string text)
+    {
+        _hintLabel.Text = text;
     }
 
     private void AddCheck(Control parent, CheckBox box, string text)
