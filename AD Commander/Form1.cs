@@ -56,7 +56,7 @@ public partial class Form1 : Form
         left.RowCount = 3;
         left.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));
         left.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
-        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 220f));
+        left.RowStyles.Add(new RowStyle(SizeType.Absolute, 320f));
 
         Button credButton = new Button();
         credButton.Text = "Credentials";
