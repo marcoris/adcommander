@@ -23,7 +23,7 @@ public static class SharpHoundGenerator
         lines.Add("# SharpHound (BloodHound CE collector): https://github.com/SpecterOps/SharpHound");
         lines.Add("");
 
-        string cmd = GeneratorHelpers.ExeInvocation("SharpHound.exe", download, downloadUrl);
+        string cmd = GeneratorHelpers.ExeInvocation("SharpHound.exe");
 
         if (collectionMethods.Count > 0)
         {

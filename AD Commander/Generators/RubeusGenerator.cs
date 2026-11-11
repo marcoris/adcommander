@@ -38,7 +38,7 @@ public static class RubeusGenerator
         lines.Add("# Precompiled binaries: https://github.com/r3motecontrol/Ghostpack-CompiledBinaries");
         lines.Add("");
 
-        string cmd = GeneratorHelpers.ExeInvocation("Rubeus.exe", download, downloadUrl) + " " + command;
+        string cmd = GeneratorHelpers.ExeInvocation("Rubeus.exe") + " " + command;
 
         if (user.Length > 0)
         {

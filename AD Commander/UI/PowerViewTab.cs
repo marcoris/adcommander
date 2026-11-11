@@ -46,19 +46,18 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         ["Find-DomainUserLocation"]= new[] { "Identity", "Domain", "ComputerName", "Server" },
     };
 
-    // Common userAccountControl flags (name -> bit value). Selecting one fills the LDAP Filter field
-    // with the matching bitwise filter; "(none)" leaves it untouched.
-    private static readonly (string Name, long Value)[] UacFlags =
+    // userAccountControl flags for PowerView's -UACFilter (it takes the flag name directly).
+    private static readonly string[] UacFlags =
     {
-        ("(none)", 0),
-        ("DONT_REQ_PREAUTH", 4194304),
-        ("PASSWD_NOTREQD", 32),
-        ("TRUSTED_FOR_DELEGATION", 524288),
-        ("TRUSTED_TO_AUTH_FOR_DELEGATION", 16777216),
-        ("NOT_DELEGATED", 1048576),
-        ("DONT_EXPIRE_PASSWORD", 65536),
-        ("ACCOUNTDISABLE", 2),
-        ("SMARTCARD_REQUIRED", 262144),
+        "(none)",
+        "DONT_REQ_PREAUTH",
+        "PASSWD_NOTREQD",
+        "TRUSTED_FOR_DELEGATION",
+        "TRUSTED_TO_AUTH_FOR_DELEGATION",
+        "NOT_DELEGATED",
+        "DONT_EXPIRE_PASSWORD",
+        "ACCOUNTDISABLE",
+        "SMARTCARD_REQUIRED",
     };
 
     private readonly ComboBox _groupBox = new ComboBox();
@@ -112,12 +111,11 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         _propertiesBox.Text = "*";
 
         _uacFilterBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        foreach ((string Name, long Value) f in UacFlags)
+        foreach (string flag in UacFlags)
         {
-            _uacFilterBox.Items.Add(f.Name);
+            _uacFilterBox.Items.Add(flag);
         }
         _uacFilterBox.SelectedIndex = 0;
-        _uacFilterBox.SelectedIndexChanged += OnUacFilterChanged;
         root.Controls.Add(TrackedRow("Identity", "Identity:", _identityBox));
         root.Controls.Add(TrackedRow("Properties", "Properties:", _propertiesBox));
         root.Controls.Add(TrackedRow("Domain", "Domain (FQDN):", _domainBox));
@@ -144,7 +142,7 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         tips.SetToolTip(_propertiesBox, "Attributes to return. '*' = all; or a comma list like samaccountname,memberof.");
         tips.SetToolTip(_domainBox, "Target domain FQDN, e.g. inlanefreight.local. Empty = current domain.");
         tips.SetToolTip(_ldapFilterBox, "Raw LDAP filter, e.g. (admincount=1).");
-        tips.SetToolTip(_uacFilterBox, "Pick a userAccountControl flag; it fills the LDAP Filter above with the matching bitwise filter.");
+        tips.SetToolTip(_uacFilterBox, "Pick a userAccountControl flag; it adds PowerView's -UACFilter with that flag name.");
         tips.SetToolTip(_serverBox, "Specific domain controller / LDAP server to query.");
         tips.SetToolTip(_computerNameBox, "Target host(s) to check. Empty = all computers in the domain.");
         tips.SetToolTip(_forestBox, "Target forest name. Empty = current forest.");
@@ -190,19 +188,6 @@ public sealed class PowerViewTab : UserControl, ICommandTab
         row.Controls.Add(cap, 0, 0);
         row.Controls.Add(field, 1, 0);
         return row;
-    }
-
-    // Variant A: a chosen UAC flag fills the LDAP Filter field with its bitwise filter.
-    private void OnUacFilterChanged(object? sender, EventArgs e)
-    {
-        int idx = _uacFilterBox.SelectedIndex;
-        if (idx <= 0)
-        {
-            return;   // "(none)": leave whatever is in the LDAP Filter field
-        }
-
-        long value = UacFlags[idx].Value;
-        _ldapFilterBox.Text = $"(userAccountControl:1.2.840.113556.1.4.803:={value})";
     }
 
     private void OnGroupChanged(object? sender, EventArgs e)
@@ -253,12 +238,17 @@ public sealed class PowerViewTab : UserControl, ICommandTab
 
         bool recurse = _rows.TryGetValue("Recurse", out var rr) && rr.Visible && _recurseBox.Checked;
 
+        string uac = (_rows.TryGetValue("UACFilter", out var ur) && ur.Visible && _uacFilterBox.SelectedIndex > 0)
+            ? (_uacFilterBox.SelectedItem?.ToString() ?? "")
+            : "";
+
         string script = PowerViewGenerator.Generate(
             fn,
             Val("Identity", _identityBox),
             Val("Properties", _propertiesBox),
             Val("Domain", _domainBox),
             Val("LDAPFilter", _ldapFilterBox),
+            uac,
             Val("Server", _serverBox),
             Val("ComputerName", _computerNameBox),
             Val("Forest", _forestBox),

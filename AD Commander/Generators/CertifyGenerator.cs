@@ -34,7 +34,7 @@ public static class CertifyGenerator
         lines.Add("# Certify 2.0 (GhostPack): https://github.com/GhostPack/Certify");
         lines.Add("");
 
-        List<string> parts = new List<string> { GeneratorHelpers.ExeInvocation("Certify.exe", download, downloadUrl), verb };
+        List<string> parts = new List<string> { GeneratorHelpers.ExeInvocation("Certify.exe"), verb };
 
         Opt(parts, "username", username);
         Opt(parts, "password", password);
