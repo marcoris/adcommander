@@ -28,7 +28,11 @@ public partial class Form1 : Form
 
     private void BuildUi()
     {
-        Version version = Assembly.GetExecutingAssembly().GetName().Version;
+        Version version = System.Reflection.Assembly
+        .GetExecutingAssembly()
+        .GetName()
+        .Version;
+        
         Text = String.Format(
             "AD Commander v{0}.{1}.{2} (build {3})",
             version.Major,
@@ -36,8 +40,9 @@ public partial class Form1 : Form
             version.Build,
             version.Revision
         );
-        Width = 960;
-        Height = 650;
+        
+        Width = 1920;
+        Height = 1300;
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(820, 520);
 
