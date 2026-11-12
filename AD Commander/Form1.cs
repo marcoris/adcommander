@@ -28,7 +28,8 @@ public partial class Form1 : Form
 
     private void BuildUi()
     {
-        Text = "AD Commander";
+        string version = System.Windows.Forms.Application.ProductVersion; 
+        Text = String.Format("AD Commander Version {0}", version);
         Width = 960;
         Height = 650;
         StartPosition = FormStartPosition.CenterScreen;
