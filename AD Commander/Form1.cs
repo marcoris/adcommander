@@ -34,11 +34,10 @@ public partial class Form1 : Form
         .Version;
         
         Text = String.Format(
-            "AD Commander v{0}.{1}.{2} (build {3})",
+            "AD Commander v{0}.{1}.{2}",
             version.Major,
             version.Minor,
-            version.Build,
-            version.Revision
+            version.Build
         );
         
         Width = 1920;
