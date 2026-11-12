@@ -28,8 +28,8 @@ public partial class Form1 : Form
 
     private void BuildUi()
     {
-        string version = Application.ProductVersion; 
-        Text = String.Format("AD Commander V{0}", version);
+        Version version = Assembly.GetExecutingAssembly().GetName().Version;
+        Text = String.Format("AD Commander v{0}.{1}.{2} (build {3})", version.Major,version.Minor,version.Patch,version.Build);
         Width = 960;
         Height = 650;
         StartPosition = FormStartPosition.CenterScreen;
