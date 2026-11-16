@@ -34,7 +34,7 @@ public partial class Form1 : Form
         .Version;
         
         Text = String.Format(
-            "AD Commander v{0}.{1}.{2}",
+            "---===[ AD Commander v{0}.{1}.{2} ]===---",
             version.Major,
             version.Minor,
             version.Build
