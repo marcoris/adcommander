@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
@@ -101,6 +102,8 @@ public partial class Form1 : Form
         _outputBox.Font = new Font("Consolas", 10f);
         _outputBox.WordWrap = false;
         _outputBox.ScrollBars = RichTextBoxScrollBars.Both;
+        _outputBox.DetectUrls = true;
+        _outputBox.LinkClicked += OnOutputLinkClicked;
 
         FlowLayoutPanel buttons = new FlowLayoutPanel();
         buttons.Dock = DockStyle.Fill;
@@ -312,5 +315,23 @@ public partial class Form1 : Form
     private void OnClearClicked(object? sender, EventArgs e)
     {
         _outputBox.Clear();
+    }
+
+    // Open a clicked URL (e.g. a tool-reference comment) in the default browser.
+    private void OnOutputLinkClicked(object? sender, LinkClickedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.LinkText))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(e.LinkText) { UseShellExecute = true });
+        }
+        catch
+        {
+            // Ignore: nothing useful to do if the link can't be opened.
+        }
     }
 }
